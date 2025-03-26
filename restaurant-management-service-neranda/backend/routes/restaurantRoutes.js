@@ -9,7 +9,7 @@ router.post('/register', async (req, res) => {
     try {
         const {name, email, address, password, conact, description, image, menu, deliveryFee, status} = req.body;
         const hash = await bcrypt.hash(password, 10);
-        const restaurant = new Restaurant(name, email, address, password: hash, conact, description, image, menu, deliveryFee, status);
+        const restaurant = new Restaurant({ name, email, address, password: hash, conact, description, image, menu, deliveryFee, status });
         await restaurant.save();
         res.json({message: "Registration submitted for Approval.."});
     } catch (error) {
