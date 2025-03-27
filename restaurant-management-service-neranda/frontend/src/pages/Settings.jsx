@@ -1,7 +1,7 @@
 import React from 'react'
 import Sidebar from '../components/SideBar'
 
-export default function Menu() {
+export default function Settings() {
   return (
     <div className="flex min-h-screen bg-gray-100">
     
@@ -10,7 +10,7 @@ export default function Menu() {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-4xl font-bold text-sky-700 mb-4">Menu Section</h1>
+        <h1 className="text-4xl font-bold text-sky-700 mb-4">Settings Section</h1>
       </div>
 
     </div>

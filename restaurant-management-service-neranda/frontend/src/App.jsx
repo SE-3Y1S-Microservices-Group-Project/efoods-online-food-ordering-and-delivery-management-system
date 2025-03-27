@@ -6,6 +6,8 @@ import Login from './pages/Login'
 import Menu from './pages/Menu'
 import NavBar from './components/NavBar'
 import Footer from './components/Footer';
+import Order from './pages/Order';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route path="/register" element={<Register/>} />
           <Route path="/login" element={<Login/>} />
           <Route path="/menu" element={<Menu/>} />
+          <Route path="/order" element={<Order />} />
+          <Route path="/setting" element={<Settings />} />
         </Routes>
         <Footer />
       </BrowserRouter>

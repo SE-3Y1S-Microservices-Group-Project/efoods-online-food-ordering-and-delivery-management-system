@@ -14,15 +14,15 @@ export default function RestaurentDashboard() {
         <h1 className="text-4xl font-bold text-sky-700 mb-4">Restaurant Dashboard</h1>
 
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded shadow">
+          <div className="bg-white p-6 rounded shadow hover:shadow-lg">
             <h2 className="text-xl font-semibold">Today Orders</h2>
             <p className="text-3xl font-bold mt-2 text-sky-600">12</p>
           </div>
-          <div className="bg-white p-6 rounded shadow">
+          <div className="bg-white p-6 rounded shadow hover:shadow-lg">
             <h2 className="text-xl font-semibold">Total Revenue</h2>
             <p className="text-3xl font-bold mt-2 text-green-600">LKR 45,000</p>
           </div>
-          <div className="bg-white p-6 rounded shadow">
+          <div className="bg-white p-6 rounded shadow hover:shadow-lg">
             <h2 className="text-xl font-semibold">Status</h2>
             <p className="text-lg font-medium mt-2 text-yellow-600">Pending Approval</p>
           </div>

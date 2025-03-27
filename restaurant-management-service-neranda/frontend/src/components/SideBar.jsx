@@ -20,18 +20,31 @@ export default function SideBar() {
 
         <nav className="mt-4">
           <ul className="space-y-2">
-            <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
-              <FaHome className="mr-2" /> Restaurant Dashboard
-            </li>
-            <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
-              <FaListAlt className="mr-2" /> Menu Management
-            </li>
-            <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
-              <FaBars className="mr-2" /> Order Management
-            </li>
-            <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
-              <FaCog className="mr-2" /> Settings
-            </li>
+
+            <a href="/">
+                <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
+                <FaHome className="mr-2" /> Restaurant Dashboard
+                </li>
+            </a>
+            
+            <a href="/menu">
+                <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
+                <FaListAlt className="mr-2" /> Menu Management
+                </li>
+            </a>
+
+            <a href="/order">
+                <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
+                <FaBars className="mr-2" /> Order Management
+                </li>
+            </a>
+
+            <a href="/setting">
+                <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
+                <FaCog className="mr-2" /> Settings
+                </li>            
+            </a>
+
           </ul>
         </nav>
       </div>
