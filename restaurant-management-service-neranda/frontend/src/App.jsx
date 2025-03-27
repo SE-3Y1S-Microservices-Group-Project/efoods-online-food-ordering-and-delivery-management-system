@@ -4,6 +4,8 @@ import RestaurentDashboard from './pages/RestaurentDashboard'
 import Register from './pages/Register'
 import Login from './pages/Login'
 import Menu from './pages/Menu'
+import NavBar from './components/NavBar'
+import Footer from './components/Footer';
 
 function App() {
   return (
@@ -11,12 +13,14 @@ function App() {
       {/* <h1>Restaurant Management System</h1> */}
 
       <BrowserRouter>
+        <NavBar />
         <Routes>
           <Route path="/" element={<RestaurentDashboard />} />
           <Route path="/register" element={<Register/>} />
           <Route path="/login" element={<Login/>} />
           <Route path="/menu" element={<Menu/>} />
         </Routes>
+        <Footer />
       </BrowserRouter>
 
     </div>
