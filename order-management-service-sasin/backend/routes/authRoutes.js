@@ -1,17 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const {
-    registerUser,
-    loginUser,
-    googleAuth,
-    logoutUser
+  registerUser,
+  loginUser,
+  getUserById,
+  updateUserById,
+  deleteUserById,
+  logoutUser
 } = require('../controllers/authController');
 
-
-//public routes
+//Public routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
-router.post('/google', googleAuth);
+
+//Protected routes (require authentication)
+router.get('/user/:id', getUserById);
+router.put('/user/:id', updateUserById);
+router.delete('/user/:id', deleteUserById);
 router.post('/logout', logoutUser);
 
 module.exports = router;

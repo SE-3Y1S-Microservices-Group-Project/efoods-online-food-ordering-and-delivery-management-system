@@ -1,65 +1,74 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const userSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        minlength: 3,
-        maxlength: 10
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true,
-        trim: true,
-        lowercase: true
-    },
-    password: {
-        type: String,
-        required: function() {
-            //only required for local authentications
-            return !this.googleId;
-        },
-        minlength: 6
-    },
-    googleId: {
-        type: String,
-        unique: true,
-        //alllows mutiple null values
-        sparse: true
-    },
-    firstName: {
-        type : String,
-        trim: true
-    },
-    lastName: {
-        type: String,
-        trim: true
-    },
-    avatar: {
-        type: String
-    },
-    isVerified: {
-        type: Boolean,
-        default: false
-    },
-    loginType: {
-        type: String,
-        enum: ['local', 'google'],
-        default: 'local'
+const UserSchema = new mongoose.Schema({
+  firstName: {
+    type: String,
+    required: [true, 'First name is required'],
+    trim: true,
+    minlength: [2, 'First name must be at least 2 characters long']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Last name is required'],
+    trim: true,
+    minlength: [2, 'Last name must be at least 2 characters long']
+  },
+  contact: {
+    type: String,
+    required: [true, 'Contact number is required'],
+    trim: true,
+    validate: {
+      validator: function(v) {
+        // Basic phone number validation (adjust regex as needed)
+        return /^[+]?[\d\s()-]{10,15}$/.test(v);
+      },
+      message: props => `${props.value} is not a valid phone number!`
     }
-}, { 
-    timestamps: true 
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address']
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters long']
+  }
+}, {
+  timestamps: true
 });
 
-//add index for efficient querying
-//ensure that email is unique for fast lookups
-//userSchema.index({ email: 1}, { unique: true });
+// Hash password before saving
+UserSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
 
-//crate an indx on googleId to speed up search for oauth useres
-//sparse option ensures that users without googleId have null values
-//userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
+  try {
+    // Generate a salt
+    const salt = await bcrypt.genSalt(10);
+    // Hash the password along with the salt
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
-module.exports = mongoose.model('User', userSchema);
+// Method to compare password
+UserSchema.methods.comparePassword = async function(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Remove password from JSON output
+UserSchema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+
+module.exports = mongoose.model('User', UserSchema);

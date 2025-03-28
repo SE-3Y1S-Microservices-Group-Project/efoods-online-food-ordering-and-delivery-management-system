@@ -1,187 +1,234 @@
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const googleClient = require('../config/googleAuth');
-
-//handle async oparations in express
+//middleware to handle async errors automatically
 const asyncHandler = require('express-async-handler');
 
-//import the validation functions
-const {
-    registerValidation,
-    loginValidation
-} = require('../utils/validation');
+//register new user
+//POST api/auth/register
+//public access
+exports.registerUser = asyncHandler(async (req, res) => {
+  //extract user inputs user req body
+  const { firstName, lastName, contact, email, password } = req.body;
 
-
-/**
- * @des register a new user
- * @route POST api/auth/register
- * @access Public
- */
-
-const registerUser = asyncHandler(async (req, res) => {
-    //validate input
-    const { error } = registerValidation(req.body);
-    //if there is an validation error send 400 status with error message 
-    if (error) {
-        res.status(400);
-        throw new Error(error.details[0].message);
-    }
-
-    //destructuring necessary fields from the req body
-    const {username, email, password} = req.body;
-
-    //check if the user already exists
-    const existingUser = await User.findOne({
-        //search fro a user by either email or username
-        $or: [{ email }, { username }]
+  //using email check user already in the db
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    console.log('User already exists: ', email);
+    return res.status(400).json({
+      success: false,
+      message: 'User already exists'
     });
+  }
 
-    //if user already exists return a 400 error
-    if (existingUser) {
-        res.status(400);
-        throw new Error('User already exists');
-    }
+  //create a new user in db
+  const user = await User.create({
+    firstName,
+    lastName,
+    contact,
+    email,
+    password
+  });
 
-    //genarate salt for password hashing
-    const salt = await bcrypt.genSalt(10);
-    //hash the password with salt
-    const hashedPassword = await bcrypt.hash(password, salt);
+  console.log('User registered successfully:', user._id);
 
-    //create new user
-    const newUser = await User.create({
-        username,
-        email,
-        //store the hashed password
-        password: hashedPassword,
-        //setting the login type to local
-        loginType: 'local'
-    });
-
-
-    //response with details
-    res.status(201).json({
-        _id: newUser._id,
-        username: newUser.username,
-        email: newUser.email
-    });
+  //response with user details without password\
+  res.status(201).json({
+    _id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    contact: user.contact,
+    email: user.email
+  });
 });
 
-/**
- * @desc    authenticate user & get token
- * @route   POST api/auth/login
- * @access  Public
- */
-const loginUser = asyncHandler(async (req, res) => {
-    //validate input
-    const { error } = loginValidation(req.body);
-    if (error) {
-      res.status(400);
-      throw new Error(error.details[0].message);
-    }
-  
-    const { email, password } = req.body;
-  
-    //find user
-    const user = await User.findOne({ email });
-    if (!user) {
-      res.status(401);
-      throw new Error('Invalid credentials');
-    }
-  
-    //check password for local login
-    if (user.loginType === 'local') {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        res.status(401);
-        throw new Error('Invalid credentials');
-      }
-    }
+//user login
+//POST api/auth/login
+//public access
+exports.loginUser = asyncHandler(async (req, res) => {
+  //extract email and password from req
+  const { email, password } = req.body;
 
-    //response with details
+  //using email find the user
+  const user = await User.findOne({ email });
+
+  //check user exists and verify the password
+  if (user && (await user.comparePassword(password))) {
+    //store user ID in session (used for authentication in session-based auth)
+    //req.session.userId = user._id;
+    req.userId = user._id;
+
+    console.log('User logged successfully');
+    //respond with user details without password
     res.json({
-        _id: user._id,
-        username: user.username,
-        email: user.email,
-        loginType: user.loginType
-    });
-});
-
-/**
- * @desc    google OAuth Login/Signup
- * @route   POST api/auth/google
- * @access  Public
- */
-const googleAuth = asyncHandler(async (req, res) => {
-    const { credential } = req.body;
-  
-    //verify google token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-  
-    const payload = ticket.getPayload();
-    const { 
-      sub: googleId, 
-      email, 
-      given_name: firstName, 
-      family_name: lastName,
-      picture: avatar 
-    } = payload;
-  
-    //find or create a user
-    let user = await User.findOne({ 
-      $or: [{ googleId }, { email }] 
-    });
-  
-    if (!user) {
-      //create new user
-      user = await User.create({
-        username: email.split('@')[0],
-        email,
-        googleId,
-        firstName,
-        lastName,
-        avatar,
-        loginType: 'google',
-        isVerified: true
-      });
-    } else if (!user.googleId) {
-      //update existing user with google details
-      user.googleId = googleId;
-      user.loginType = 'google';
-      user.isVerified = true;
-      user.firstName = firstName;
-      user.lastName = lastName;
-      user.avatar = avatar;
-      await user.save();
-    }
-  
-    //reponse with details
-    res.status(200).json({
       _id: user._id,
-      username: user.username,
-      email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
-      avatar: user.avatar,
-      loginType: user.loginType
+      email: user.email,
+      contact: user.contact
     });
+  } else {
+    console.log('Invalid email or password');
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid email or password'
+    });
+  }
 });
 
-/**
- * @desc    logout user
- * @route   POST api/auth/logout
- * @access  Private
- */
-const logoutUser = asyncHandler(async (req, res) => {
-    //logout message
+//get user by id
+//GET api/auth/user/:id
+//private access
+exports.getUserById = asyncHandler(async (req, res) => {
+  //check if user is authenticated
+  //if (!req.session.userId)
+  if (!req.params.id) {
+    console.log('Not authorized, no session');
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized, no session'
+    });
+  }
+
+  const user = await User.findById(req.params.id).select('-password');
+
+  if (!user) {
+    console.log('User not found');
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  res.json(user);
+});
+
+//update user by id
+//PUT api/auth/user/:id
+//private access
+exports.updateUserById = asyncHandler(async (req, res) => {
+  // Check if user is authenticated and authorized
+  // if (!req.session.userId)
+  if (!req.params.id) {
+    console.log('Not authorized, no session');
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized, no session'
+    });
+  }
+
+  // Check if the user is trying to update their own profile
+  //if (req.session.userId.toString() !== req.params.id)
+  if (req.params.id.toString() !== req.params.id) {
+    console.log('Not authorized to update this user');
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized to update this user'
+    });
+  }
+
+  //extract user inputs from req body
+  const { firstName, lastName, contact, email } = req.body;
+
+  //find user in db
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    console.log('User not found');
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  //update user fields
+  user.firstName = firstName || user.firstName;
+  user.lastName = lastName || user.lastName;
+  user.contact = contact || user.contact;
+  
+  //only update email if it's different and not already in use
+  if (email && email !== user.email) {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      console.log('Email already exists cannot update');
+      return res.status(400).json({
+        success: false,
+        message: 'Email already exists cannot update'
+      });
+    }
+    user.email = email;
+  }
+
+  const updatedUser = await user.save();
+
+  console.log('User update successfully');
+
+  res.json({
+    _id: updatedUser._id,
+    firstName: updatedUser.firstName,
+    lastName: updatedUser.lastName,
+    contact: updatedUser.contact,
+    email: updatedUser.email
+  });
+});
+
+//delete user by id
+//DELETE api/auth/user/:id
+//private access
+exports.deleteUserById = asyncHandler(async (req, res) => {
+  // Check if user is authenticated and authorized
+  //if (!req.session.userId)
+  if (!req.params.id) {
+    console.log('Not authorized, no session');
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized, no session'
+    });
+  }
+
+  // Check if the user is trying to delete their own profile
+  //if (req.session.userId.toString() !== req.params.id)
+  if (req.params.id.toString() !== req.params.id) {
+    console.log('Not authorized to delete this user');
+    return res.status(403).json({
+      success: false,
+      message: 'Not authorized to delete this user'
+    });
+  }
+
+  const user = await User.findById(req.params.id);
+
+  if (!user) {
+    console.log('User not found');
+    return res.status(404).json({
+      success: false,
+      message: 'User not found'
+    });
+  }
+
+  await user.deleteOne();
+  console.log('User deleted successfully');
+
+  // Destroy the session
+  //req.session.destroy
+  req.destroy((err) => {
+    if (err) {
+      console.error('Session destruction error:', err);
+    }
+  });
+
+  res.json({ message: 'User removed' });
+});
+
+//logout user
+//POST api/user/logout
+//private access
+exports.logoutUser = asyncHandler(async (req, res) => {
+  //req.session.destroy
+  req.destroy((err) => {
+    if (err) {
+      console.error('Session destruction error:', err);
+      return res.status(500).json({ message: 'Could not log out' });
+    }
     res.json({ message: 'Logged out successfully' });
+    console.log('User Logged out successfully');
+  });
 });
-
-module.exports = {
-    registerUser,
-    loginUser,
-    googleAuth,
-    logoutUser
-};
