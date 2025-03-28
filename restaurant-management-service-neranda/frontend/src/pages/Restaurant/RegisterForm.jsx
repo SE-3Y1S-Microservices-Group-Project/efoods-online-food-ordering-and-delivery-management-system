@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
   X, Store, Mail, MapPin, Lock, Phone,
   FileText, ImagePlus, Coins
 } from 'lucide-react'
 
+import { Country, State, City } from 'country-state-city'
+
 export default function RegisterForm({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    address: '',
     password: '',
     contact: '',
     description: '',
@@ -18,6 +19,35 @@ export default function RegisterForm({ onClose, onSuccess }) {
   })
 
   const [images, setImages] = useState([])
+
+  const [selectedCountry, setSelectedCountry] = useState('')
+  const [selectedState, setSelectedState] = useState('')
+  const [selectedCity, setSelectedCity] = useState('')
+
+  const [countryList, setCountryList] = useState([])
+  const [stateList, setStateList] = useState([])
+  const [cityList, setCityList] = useState([])
+
+  useEffect(() => {
+    const countries = Country.getAllCountries()
+    setCountryList(countries)
+  }, [])
+
+  useEffect(() => {
+    if (selectedCountry) {
+      const states = State.getStatesOfCountry(selectedCountry)
+      setStateList(states)
+      setSelectedState('')
+      setCityList([])
+    }
+  }, [selectedCountry])
+
+  useEffect(() => {
+    if (selectedState) {
+      const cities = City.getCitiesOfState(selectedCountry, selectedState)
+      setCityList(cities)
+    }
+  }, [selectedState])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -34,14 +64,15 @@ export default function RegisterForm({ onClose, onSuccess }) {
       for (let key in formData) {
         data.append(key, formData[key])
       }
+
+      data.append('address', `${selectedCity}, ${selectedState}, ${selectedCountry}`)
+
       images.forEach((file) => {
         data.append('images', file)
       })
 
-      await axios.post('http://localhost:5000/api/restaurants', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      await axios.post('http://localhost:5000/api/restaurants/register', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
 
       alert('Restaurant registered successfully!')
@@ -65,35 +96,58 @@ export default function RegisterForm({ onClose, onSuccess }) {
         </h2>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          <div className="flex items-center border rounded px-2">
-            <Store className="text-gray-400 mr-2" />
-            <input name="name" placeholder="Name" onChange={handleChange} className="w-full p-2 outline-none" required />
+          <InputWithIcon icon={<Store />} name="name" placeholder="Restaurant Name" onChange={handleChange} />
+          <InputWithIcon icon={<Mail />} name="email" placeholder="Email" onChange={handleChange} />
+          <InputWithIcon icon={<Phone />} name="contact" placeholder="Contact" onChange={handleChange} />
+          <InputWithIcon icon={<Lock />} name="password" type="password" placeholder="Password" onChange={handleChange} />
+
+          {/* Location Dropdowns */}
+          <div className="col-span-2">
+            <label className="block mb-1 font-medium text-gray-700">Country</label>
+            <select
+              value={selectedCountry}
+              onChange={(e) => setSelectedCountry(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Select Country</option>
+              {countryList.map((c) => (
+                <option key={c.isoCode} value={c.isoCode}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex items-center border rounded px-2">
-            <Mail className="text-gray-400 mr-2" />
-            <input name="email" placeholder="Email" onChange={handleChange} className="w-full p-2 outline-none" required />
+          <div className="col-span-1">
+            <label className="block mb-1 font-medium text-gray-700">State</label>
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Select State</option>
+              {stateList.map((s) => (
+                <option key={s.isoCode} value={s.isoCode}>{s.name}</option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex items-center border rounded px-2">
-            <Phone className="text-gray-400 mr-2" />
-            <input name="contact" placeholder="Contact" onChange={handleChange} className="w-full p-2 outline-none" required />
+          <div className="col-span-1">
+            <label className="block mb-1 font-medium text-gray-700">City</label>
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            >
+              <option value="">Select City</option>
+              {cityList.map((c, index) => (
+                <option key={index} value={c.name}>{c.name}</option>
+              ))}
+            </select>
           </div>
 
-          <div className="flex items-center border rounded px-2">
-            <Lock className="text-gray-400 mr-2" />
-            <input name="password" type="password" placeholder="Password" onChange={handleChange} className="w-full p-2 outline-none" required />
-          </div>
-
-          <div className="flex items-center border rounded px-2 col-span-2">
-            <MapPin className="text-gray-400 mr-2" />
-            <input name="address" placeholder="Full Address" onChange={handleChange} className="w-full p-2 outline-none" required />
-          </div>
-
-          <div className="flex items-center border rounded px-2">
-            <Coins className="text-gray-400 mr-2" />
-            <input name="deliveryFee" placeholder="Delivery Fee" onChange={handleChange} className="w-full p-2 outline-none" required />
-          </div>
+          <InputWithIcon icon={<Coins />} name="deliveryFee" placeholder="Delivery Fee" onChange={handleChange} />
 
           <div className="flex items-center border rounded px-2 col-span-2">
             <ImagePlus className="text-gray-400 mr-2" />
@@ -122,3 +176,18 @@ export default function RegisterForm({ onClose, onSuccess }) {
     </div>
   )
 }
+
+// Reusable input with icon
+const InputWithIcon = ({ icon, name, placeholder, onChange, type = 'text' }) => (
+  <div className="flex items-center border rounded px-2">
+    <span className="text-gray-400 mr-2">{icon}</span>
+    <input
+      name={name}
+      type={type}
+      placeholder={placeholder}
+      onChange={onChange}
+      className="w-full p-2 outline-none"
+      required
+    />
+  </div>
+)

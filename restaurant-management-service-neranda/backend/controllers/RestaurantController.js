@@ -7,20 +7,20 @@ exports.register = async (req, res) => {
     try {
       const images = req.files ? req.files.map(file => `/uploads/restaurants/${file.filename}`) : [];
   
-      const { name, email, address, password, contact, description, deliveryFee, status } = req.body;
+      const {
+        name, email, password, contact,
+        description, deliveryFee, status,
+        address, country, state, city
+      } = req.body;
+
       const hash = await bcrypt.hash(password, 10);
   
       const restaurant = new Restaurant({
-        name,
-        email,
-        address,
-        password: hash,
-        contact,
-        description,
-        deliveryFee,
-        status,
+        name, email, contact, password: hash,
+        description, deliveryFee, status,
+        address, country, state, city,
         images
-      });
+    });
   
       await restaurant.save();
       res.status(201).json(restaurant);

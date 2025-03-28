@@ -5,9 +5,12 @@ const restaurantSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
-  address: String,
   contact: String,
-  description: String,  
+  description: String,
+  address: String, // full address text or street address
+  country: String,
+  state: String,
+  city: String,
   image: [String],
   menu: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem' }],
   rating: { type: Number, default: 0 },
@@ -16,6 +19,7 @@ const restaurantSchema = new mongoose.Schema({
   deliveryFee: { type: Number, default: 0 },
   status: { type: String, default: 'pending' },
   isAvailable: { type: Boolean, default: true },
-});
+})
+
 
 module.exports = mongoose.model('Restaurant', restaurantSchema);
