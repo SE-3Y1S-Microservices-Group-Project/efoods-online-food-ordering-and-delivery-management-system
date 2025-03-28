@@ -1,8 +1,8 @@
-// frontend/src/pages/RestaurentDashboard.jsx
+// frontend/src/pages/Dashboard.jsx
 import React from 'react'
 import Sidebar from '../components/SideBar'
 
-export default function RestaurentDashboard() {
+export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-gray-100">
     
@@ -11,7 +11,7 @@ export default function RestaurentDashboard() {
 
       {/* Main Content */}
       <div className="flex-1 p-6">
-        <h1 className="text-4xl font-bold text-sky-700 mb-4">Restaurant Dashboard</h1>
+        <h1 className="text-4xl font-bold text-sky-700 mb-4">Dashboard</h1>
 
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-white p-6 rounded shadow hover:shadow-lg">

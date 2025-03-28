@@ -23,7 +23,13 @@ export default function SideBar() {
 
             <a href="/">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
-                <FaHome className="mr-2" /> Restaurant Dashboard
+                <FaHome className="mr-2" /> Dashboard
+                </li>
+            </a>
+
+            <a href="/restaurant">
+                <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
+                <FaListAlt className="mr-2" /> Restaurant Management
                 </li>
             </a>
             
