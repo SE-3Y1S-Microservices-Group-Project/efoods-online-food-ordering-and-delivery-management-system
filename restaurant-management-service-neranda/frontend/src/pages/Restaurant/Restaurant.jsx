@@ -1,63 +1,49 @@
-import React, { useEffect, useState } from 'react'
-import Sidebar from '../../components/SideBar'
-import axios from 'axios'
-import RegisterForm from './RegisterForm'
-import DataTable from 'react-data-table-component'
+import React, { useEffect, useState, useMemo } from 'react';
+import Sidebar from '../../components/SideBar';
+import axios from 'axios';
+import RegisterForm from './RegisterForm';
+import DataTable, { createTheme } from 'react-data-table-component';
+import { CSVLink } from 'react-csv';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Restaurant() {
-  const [restaurants, setRestaurants] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
-  const [filterText, setFilterText] = useState('')
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [filterText, setFilterText] = useState('');
 
   useEffect(() => {
-    fetchRestaurants()
-  }, [])
+    fetchRestaurants();
+  }, []);
 
   const fetchRestaurants = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/restaurants')
-      setRestaurants(res.data)
-      setLoading(false)
+      const res = await axios.get('http://localhost:5000/api/restaurants');
+      setRestaurants(res.data);
+      setLoading(false);
     } catch (err) {
-      console.error('Error fetching restaurants:', err)
+      console.error('Error fetching restaurants:', err);
     }
-  }
+  };
 
   const deleteRestaurant = async (id) => {
     if (window.confirm('Are you sure you want to delete this restaurant?')) {
-      await axios.delete(`http://localhost:5000/api/restaurants/${id}`)
-      fetchRestaurants()
+      await axios.delete(`http://localhost:5000/api/restaurants/${id}`);
+      fetchRestaurants();
     }
-  }
+  };
 
   const editRestaurant = (id) => {
-    alert(`Edit restaurant with ID: ${id}`)
-  }
+    alert(`Edit restaurant with ID: ${id}`);
+  };
 
-  const columns = [
-    {
-      name: 'Name',
-      selector: row => row.name,
-      sortable: true
-    },
-    {
-      name: 'Email',
-      selector: row => row.email,
-      sortable: true
-    },
-    {
-      name: 'Contact',
-      selector: row => row.contact
-    },
-    {
-      name: 'Status',
-      selector: row => row.status
-    },
-    {
-      name: 'Available',
-      cell: row => row.isAvailable ? 'Yes' : 'No'
-    },
+  const columns = useMemo(() => [
+    { name: 'Name', selector: row => row.name, sortable: true },
+    { name: 'Email', selector: row => row.email, sortable: true },
+    { name: 'Contact', selector: row => row.contact, sortable: true },
+    { name: 'Status', selector: row => row.status, sortable: true },
+    { name: 'Available', selector: row => row.isAvailable ? 'Yes' : 'No', sortable: true },
     {
       name: 'Actions',
       cell: row => (
@@ -80,13 +66,24 @@ export default function Restaurant() {
       allowOverflow: true,
       button: true
     }
-  ]
+  ], []);
 
-  // Optional: filter logic
   const filteredData = restaurants.filter(item =>
-    item.name?.toLowerCase().includes(filterText.toLowerCase()) ||
-    item.email?.toLowerCase().includes(filterText.toLowerCase())
-  )
+    Object.values(item).some(val =>
+      String(val).toLowerCase().includes(filterText.toLowerCase())
+    )
+  );
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Restaurants List", 14, 16);
+    autoTable(doc, {
+      head: [columns.map(col => col.name)],
+      body: filteredData.map(row => [row.name, row.email, row.contact, row.status, row.isAvailable ? 'Yes' : 'No']),
+      startY: 22
+    });
+    doc.save('restaurants.pdf');
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -102,22 +99,24 @@ export default function Restaurant() {
           </button>
         </div>
 
-        {/* Search Input */}
         <input
           type="text"
-          placeholder="Search by name or email..."
+          placeholder="Search restaurants..."
           className="mb-4 p-2 border rounded w-full md:w-1/3"
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
         />
 
-        {/* Modal Form */}
-        {showForm && (
-          <RegisterForm
-            onClose={() => setShowForm(false)}
-            onSuccess={fetchRestaurants}
-          />
-        )}
+        <div className="flex gap-3 mb-3">
+          <CSVLink data={filteredData} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Export CSV
+          </CSVLink>
+          <button onClick={exportPDF} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+            Export PDF
+          </button>
+        </div>
+
+        {showForm && <RegisterForm onClose={() => setShowForm(false)} onSuccess={fetchRestaurants} />}
 
         <div className="bg-white rounded shadow">
           <DataTable
@@ -128,9 +127,10 @@ export default function Restaurant() {
             highlightOnHover
             responsive
             striped
+            subHeader
           />
         </div>
       </div>
     </div>
-  )
+  );
 }
