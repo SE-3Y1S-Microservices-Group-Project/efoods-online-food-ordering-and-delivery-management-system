@@ -24,7 +24,8 @@ export default function NavBar() {
           {/* Right side */}
           <div className={`sm:flex ${isOpen ? 'block' : 'hidden'} sm:items-center`}>
             <ul className="flex flex-col sm:flex-row sm:space-x-4 mt-4 sm:mt-0">
-              <li><a href="#" className="block px-3 py-2 rounded hover:bg-sky-100">Home</a></li>
+              <li><a href="/" className="block px-3 py-2 rounded hover:bg-sky-100">Home</a></li>
+              <li><a href="/restaurant" className="block px-3 py-2 rounded hover:bg-sky-100">Restaurant</a></li>
               <li><a href="/menu" className="block px-3 py-2 rounded hover:bg-sky-100">Menu</a></li>
               <li><a href="/order" className="block px-3 py-2 rounded hover:bg-sky-100">Order</a></li>
               {/* <li><a href="#" className="block px-3 py-2 rounded hover:bg-sky-100">Home</a></li>
