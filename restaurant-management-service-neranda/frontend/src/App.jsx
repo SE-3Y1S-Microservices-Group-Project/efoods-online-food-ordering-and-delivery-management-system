@@ -8,7 +8,7 @@ import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import Order from './pages/Order';
 import Settings from './pages/Settings';
-import Restaurant from './pages/Restaurant';
+import Restaurant from './pages/Restaurant/Restaurant';
 
 function App() {
   return (
