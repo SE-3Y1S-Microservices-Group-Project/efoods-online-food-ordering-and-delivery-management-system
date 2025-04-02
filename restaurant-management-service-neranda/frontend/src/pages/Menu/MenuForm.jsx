@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import axios from 'axios'
-import { X, Utensils, FileText, ImagePlus, Coins, List } from 'lucide-react'
+import { X, Utensils, FileText, ImagePlus, Coins, List, Tag, Clock, Percent } from 'lucide-react'
 
 export default function MenuForm({ onClose, onSuccess, restaurantId }) {
   const [formData, setFormData] = useState({
@@ -8,45 +8,48 @@ export default function MenuForm({ onClose, onSuccess, restaurantId }) {
     description: '',
     price: '',
     category: '',
+    tags: '',
+    prepTime: '',
+    discount: '',
     isAvailable: true,
-  })
+  });
 
-  const [image, setImage] = useState(null)
+  const [image, setImage] = useState(null);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
-    })
-  }
+    });
+  };
 
   const handleFileChange = (e) => {
-    setImage(e.target.files[0])
-  }
+    setImage(e.target.files[0]);
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      const data = new FormData()
+      const data = new FormData();
       for (let key in formData) {
-        data.append(key, formData[key])
+        data.append(key, formData[key]);
       }
-      data.append('restaurantId', restaurantId)
-      if (image) data.append('image', image)
+      data.append('restaurantId', restaurantId);
+      if (image) data.append('image', image);
 
-      await axios.post('http://localhost:5000/api/menu', data, {
+      const res = await axios.post('http://localhost:5000/api/menu', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      });
 
-      alert('Menu item created successfully!')
-      onSuccess()
-      onClose()
+      alert('Menu item created successfully!');
+      onSuccess(res.data);
+      onClose();
     } catch (err) {
-      console.error(err)
-      alert('Error creating menu item')
+      console.error(err);
+      alert('Error creating menu item');
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -63,9 +66,19 @@ export default function MenuForm({ onClose, onSuccess, restaurantId }) {
           <InputWithIcon icon={<Utensils />} name="name" placeholder="Item Name" onChange={handleChange} />
           <InputWithIcon icon={<Coins />} name="price" type="number" placeholder="Price" onChange={handleChange} />
           <InputWithIcon icon={<List />} name="category" placeholder="Category" onChange={handleChange} />
+          <InputWithIcon icon={<Percent />} name="discount" type="number" placeholder="Discount %" onChange={handleChange} />
+          <InputWithIcon icon={<Clock />} name="prepTime" type="number" placeholder="Prep Time (min)" onChange={handleChange} />
+          <InputWithIcon icon={<Tag />} name="tags" placeholder="Tags (comma separated)" onChange={handleChange} />
 
           <div className="flex items-center border rounded px-2 col-span-2">
             <ImagePlus className="text-gray-400 mr-2" />
+            <input
+                type="file"
+                name="images"
+                multiple
+                onChange={handleFileChange}
+                className="w-full p-2 outline-none"
+            />
             <input type="file" name="image" onChange={handleFileChange} className="w-full p-2 outline-none" />
           </div>
 
@@ -106,7 +119,7 @@ export default function MenuForm({ onClose, onSuccess, restaurantId }) {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
 const InputWithIcon = ({ icon, name, placeholder, onChange, type = 'text' }) => (
@@ -121,4 +134,4 @@ const InputWithIcon = ({ icon, name, placeholder, onChange, type = 'text' }) => 
       required
     />
   </div>
-)
+);
