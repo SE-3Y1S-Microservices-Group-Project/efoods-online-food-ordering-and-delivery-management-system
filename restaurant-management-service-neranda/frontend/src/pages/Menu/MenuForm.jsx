@@ -67,20 +67,27 @@ export default function MenuForm({ onClose, onSuccess, restaurantId }) {
           <InputWithIcon icon={<Coins />} name="price" type="number" placeholder="Price" onChange={handleChange} />
           <InputWithIcon icon={<List />} name="category" placeholder="Category" onChange={handleChange} />
           <InputWithIcon icon={<Percent />} name="discount" type="number" placeholder="Discount %" onChange={handleChange} />
-          <InputWithIcon icon={<Clock />} name="prepTime" type="number" placeholder="Prep Time (min)" onChange={handleChange} />
+          <InputWithIcon icon={<Clock />} name="prepTime" type="time" placeholder="Prep Time (min)" onChange={handleChange} />
           <InputWithIcon icon={<Tag />} name="tags" placeholder="Tags (comma separated)" onChange={handleChange} />
 
           <div className="flex items-center border rounded px-2 col-span-2">
             <ImagePlus className="text-gray-400 mr-2" />
             <input
-                type="file"
-                name="images"
-                multiple
-                onChange={handleFileChange}
-                className="w-full p-2 outline-none"
+              type="file"
+              name="images"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full p-2 outline-none"
             />
-            <input type="file" name="image" onChange={handleFileChange} className="w-full p-2 outline-none" />
+
+            {/* To show previews of the images
+            {formData.images && formData.images.map((img, i) => (
+              <img key={i} src={URL.createObjectURL(img)} className="w-20 h-20 object-cover rounded mr-2" />
+            ))} */}
+
           </div>
+
 
           <div className="flex items-start border rounded px-2 col-span-2">
             <FileText className="text-gray-400 mt-2 mr-2" />
@@ -117,6 +124,7 @@ export default function MenuForm({ onClose, onSuccess, restaurantId }) {
             </button>
           </div>
         </form>
+
       </div>
     </div>
   );

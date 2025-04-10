@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Menu from './pages/Menu/Menu';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
-import Order from './pages/Order';
+import Order from './pages/Order/Order';
 import Settings from './pages/Settings';
 import Restaurant from './pages/Restaurant/Restaurant';
 

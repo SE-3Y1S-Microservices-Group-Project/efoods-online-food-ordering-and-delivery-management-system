@@ -26,3 +26,5 @@ mongoose.connect(process.env.MONGO_URI)
 const restaurantRoutes = require('./routes/restaurantRoutes');
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/menu', require('./routes/menuItemRoutes'))
+
+app.use('/api/orders', require('./routes/orderRoutes'));
