@@ -28,3 +28,6 @@ app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/menu', require('./routes/menuItemRoutes'))
 
 app.use('/api/orders', require('./routes/orderRoutes'));
+
+app.use('/api/auth', require('./routes/authRoutes'))
+
