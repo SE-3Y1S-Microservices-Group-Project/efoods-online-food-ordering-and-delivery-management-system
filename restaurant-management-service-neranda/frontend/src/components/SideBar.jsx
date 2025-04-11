@@ -21,7 +21,7 @@ export default function SideBar() {
         <nav className="mt-4">
           <ul className="space-y-2">
 
-            <a href="/">
+            <a href="/dashboard">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaHome className="mr-2" /> Dashboard
                 </li>
