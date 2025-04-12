@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/connectDB');
 const  cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
+const cartRoutes = require('./routes/cartRoutes.js');
 
 //load environment variables
 dotenv.config();
@@ -30,6 +31,7 @@ app.use((err, req, res, next) => {
 
 //calling routes
 app.use('/api/auth', authRoutes);
+app.use('/api/cart', cartRoutes);
 
 //start server
 const PORT  = process.env.PORT || 5000;
