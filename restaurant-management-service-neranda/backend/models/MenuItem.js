@@ -1,15 +1,5 @@
 const mongoose = require('mongoose');
 
-// const menuItemSchema = new mongoose.Schema({
-//     restaurantId: {type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant'},
-//     name: String,
-//     description: String,
-//     price: Number,
-//     image: String,
-//     category: String,
-//     isAvailable: { type: Boolean, default: true },
-// });
-
 const menuItemSchema = new mongoose.Schema({
     restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Restaurant' },
   
@@ -22,7 +12,7 @@ const menuItemSchema = new mongoose.Schema({
     // Pricing
     price: { type: Number, required: true },
     discount: { type: Number, default: 0 }, // in percentage
-    finalPrice: Number, // optionally store the discounted price
+    // finalPrice: Number, // optionally store the discounted price
     isAvailable: { type: Boolean, default: true },
   
     // Ordering options
@@ -40,20 +30,9 @@ const menuItemSchema = new mongoose.Schema({
     ingredients: [String],
     prepTime: Number,     // in minutes
   
-    // Nutrition info
-    nutrition: {
-      calories: Number,
-      fat: Number,
-      protein: Number
-    },
-  
     // Stock control (optional for restaurants that manage inventory)
     stock: Number,
     lowStockThreshold: Number,
-  
-    // Promotion details
-    isPromoted: { type: Boolean, default: false },
-    promotionEndsAt: Date,
   
     // Audit
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

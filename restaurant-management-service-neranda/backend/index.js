@@ -12,6 +12,7 @@ app.use(cors());
 // Multer setup for file uploads static server
 app.use('/uploads', express.static('uploads'));
 
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB Connected !");
@@ -25,6 +26,7 @@ mongoose.connect(process.env.MONGO_URI)
   // Routes
 const restaurantRoutes = require('./routes/restaurantRoutes');
 app.use('/api/restaurants', restaurantRoutes);
+
 app.use('/api/menu', require('./routes/menuItemRoutes'))
 
 app.use('/api/orders', require('./routes/orderRoutes'));
