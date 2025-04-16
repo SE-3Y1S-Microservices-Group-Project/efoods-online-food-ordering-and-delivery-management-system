@@ -33,3 +33,5 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 
 app.use('/api/auth', require('./routes/authRoutes'))
 
+// app.use('/api/dashboard/stats', require('./controllers/dashboardStat'));
+

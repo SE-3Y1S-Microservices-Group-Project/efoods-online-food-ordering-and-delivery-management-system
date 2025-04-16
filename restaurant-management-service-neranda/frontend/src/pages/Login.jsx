@@ -16,6 +16,15 @@ export default function Login() {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', form)
       localStorage.setItem('token', res.data.token)
+
+      const email = res.data.restaurant.email;
+      const restaurantName = res.data.restaurant.name; // Assuming the restaurant name is in the response
+      // alert(`Welcome back, ${email}!`);
+
+      localStorage.setItem('email', email);
+      localStorage.setItem('restaurantName', restaurantName);
+
+
       alert('Login successful!')
       navigate('/dashboard')
     } catch (error) {

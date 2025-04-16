@@ -10,6 +10,9 @@ router.post('/login', restaurantController.login);
 
 // CRUD endpoints
 router.get('/', restaurantController.getAll);
+
+router.get('/me', restaurantController.getLoggedRestaurant);
+
 router.get('/:id', restaurantController.getOne);
 // router.post('/', restaurantController.create);
 router.post('/', upload.array('images', 5), restaurantController.create); // max 5 images
@@ -18,6 +21,8 @@ router.delete('/:id', restaurantController.remove);
 
 // Availability toggle
 router.put('/:id/availability', restaurantController.toggleAvailability);
+
+
 
 
 
