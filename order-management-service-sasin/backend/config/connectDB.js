@@ -1,18 +1,28 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-    //handle connecting error
-    try {
-        //extablished a connection to mongodb using environment variables
-        const conn = await mongoose.connect(process.env.MONGO_URI);
+  try {
+    const orderDB = await mongoose.createConnection(process.env.orderServiceDB_MONGO_URI);
 
-        //provide hostname of he connection server
-        console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-        console.log(`Error: ${error.message}`);
-        //when db fails, ensure applications stops
-        process.exit(1);
-    }
-}
+    const restaurantDB = await mongoose.createConnection(process.env.restaurantServiceDB_MONGO_URI);
+
+    const deliveryDB = await mongoose.createConnection(process.env.deliveryServiceDB_MONGO_URI);
+
+    const paymentDB = await mongoose.createConnection(process.env.paymentServiceDB_MONGO_URI);
+
+    console.log('Connected to all MongoDB databases.');
+
+    return {
+      orderDB,
+      restaurantDB,
+      deliveryDB,
+      paymentDB
+    };
+
+  } catch (error) {
+    console.error(`MongoDB Connection Error: ${error.message}`);
+    process.exit(1);
+  }
+};
 
 module.exports = connectDB;

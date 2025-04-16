@@ -42,4 +42,7 @@ const menuItemSchema = new mongoose.Schema({
   
   }, { timestamps: true });
 
-  module.exports = mongoose.model('MenuItem', menuItemSchema);
+// Prevent OverwriteModelError
+module.exports = (restaurantDB) => {
+  return restaurantDB.models.MenuItem || restaurantDB.model('MenuItem', menuItemSchema);
+};

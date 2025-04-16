@@ -1,17 +1,22 @@
 const mongoose = require('mongoose');
 
-const OrderSchema = mongoose.Schema ({
+const OrderSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'User'
+        ref: 'User' // informational only
     },
     items: [
         {
-            productId: {
+            restaurantId: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
-                ref: 'Product',
+                ref: 'Restaurant' // informational only
+            },
+            menuitemId: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: 'MenuItem' // informational only
             },
             quantity: {
                 type: Number,
@@ -50,7 +55,9 @@ const OrderSchema = mongoose.Schema ({
     },
 }, {
     timestamps: true
-}
-);
+});
 
-module.exports = mongoose.model('Order', OrderSchema);
+// Prevent OverwriteModelError
+module.exports = (orderDB) => {
+    return orderDB.models.Order || orderDB.model('Order', OrderSchema);
+};

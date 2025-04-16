@@ -1,29 +1,36 @@
 const mongoose = require('mongoose');
 
-const CartSchema = mongoose.Schema ({
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: 'User',
-        },
-        items: [
-            {
-                productId: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    required: true,
-                    ref: 'Prodcuct',
-                },
-                quantity: {
-                    type: Number,
-                    required: true,
-                    default: 1,
-                },
+const CartSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        // ref is informational here, not used for population across DBs
+        ref: 'User',
+    },
+    items: [
+        {
+            restaurantId: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: 'Restaurant',
             },
-        ],
-}, 
-    { 
-        timestamps: true 
-    }
-);
+            menuItemId: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: true,
+                ref: 'MenuItem',
+            },
+            quantity: {
+                type: Number,
+                required: true,
+                default: 1,
+            },
+        },
+    ],
+}, {
+    timestamps: true
+});
 
-module.exports = mongoose.model('Cart', CartSchema);
+// Prevent OverwriteModelError
+module.exports = (orderDB) => {
+    return orderDB.models.Cart || orderDB.model('Cart', CartSchema);
+};
