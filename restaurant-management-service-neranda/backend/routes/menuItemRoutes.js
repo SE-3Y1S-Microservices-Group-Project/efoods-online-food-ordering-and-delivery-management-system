@@ -3,16 +3,24 @@ const router = express.Router();
 const controller = require('../controllers/MenuItemController');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
-// Multer config
+// ✅ Define Multer Storage FIRST
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, 'uploads/'),
+  destination: (req, file, cb) => {
+    const uploadPath = 'uploads/menuitems';
+    fs.mkdirSync(uploadPath, { recursive: true }); // Ensure folder exists
+    cb(null, uploadPath);
+  },
   filename: (req, file, cb) =>
     cb(null, Date.now() + '-' + file.originalname.replace(/\s/g, ''))
 });
+
+// ✅ Define `upload` AFTER storage
 const upload = multer({ storage });
 
-// Routes
+
+// ✅ Routes (use `upload` AFTER it's defined)
 router.get('/', controller.getAll);
 router.get('/:id', controller.getOne);
 router.post('/', upload.array('image', 5), controller.create);

@@ -27,7 +27,8 @@ exports.create = async (req, res) => {
 
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map(file => `/uploads/${file.filename}`);
+      imageUrls = req.files.map(file => `/uploads/menuitems/${file.filename}`);
+
     }
 
 

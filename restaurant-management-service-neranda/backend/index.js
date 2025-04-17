@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 dotenv.config();
 
@@ -10,7 +11,8 @@ app.use(express.json());
 app.use(cors());
 
 // Multer setup for file uploads static server
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 mongoose.connect(process.env.MONGO_URI)
@@ -33,5 +35,5 @@ app.use('/api/orders', require('./routes/orderRoutes'));
 
 app.use('/api/auth', require('./routes/authRoutes'))
 
-// app.use('/api/dashboard/stats', require('./controllers/dashboardStat'));
+// app.use('/api/dashboard', require('./controllers/dashboardStat'));
 

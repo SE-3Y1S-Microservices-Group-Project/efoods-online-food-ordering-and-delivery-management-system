@@ -34,6 +34,7 @@ export default function Dashboard() {
 
   const [revenueByDay, setRevenueByDay] = useState([]);
 
+
   useEffect(() => {
     fetchStats();
   }, []);

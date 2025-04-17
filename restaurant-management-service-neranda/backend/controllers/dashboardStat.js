@@ -1,4 +1,4 @@
-router.get('/dashboard/stats', async (req, res) => {
+router.get('/stats', async (req, res) => {
 
     const restaurantId = req.user?.id; // depends on your auth setup
     try {
@@ -11,6 +11,8 @@ router.get('/dashboard/stats', async (req, res) => {
         { $group: { _id: null, total: { $sum: "$totalAmount" } } }
       ]);
       const menuCount = await MenuItem.countDocuments({ restaurantId });
+
+
       const customerCount = await Order.distinct('customer.email', { restaurantId }).then(arr => arr.length);
       const pendingOrders = await Order.countDocuments({ status: 'pending', restaurantId });
       const completedOrders = await Order.countDocuments({ status: 'delivered', restaurantId });
@@ -51,5 +53,5 @@ router.get('/dashboard/stats', async (req, res) => {
       console.error(err);
       res.status(500).json({ error: 'Dashboard stats error' });
     }
-  });
+});
   
