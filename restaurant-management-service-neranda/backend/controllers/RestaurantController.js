@@ -10,7 +10,7 @@ exports.register = async (req, res) => {
       const {
         name, email, password, contact,
         description, deliveryFee, status,
-        address, country, state, city
+        address, country, state, city, openingTime, closingTime
       } = req.body;
 
       const hash = await bcrypt.hash(password, 10);
@@ -19,7 +19,7 @@ exports.register = async (req, res) => {
         name, email, contact, password: hash,
         description, deliveryFee, status,
         address, country, state, city,
-        images
+        images, openingTime, closingTime
     });
   
       await restaurant.save();

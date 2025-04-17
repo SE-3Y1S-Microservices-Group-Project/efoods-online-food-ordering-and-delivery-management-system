@@ -58,7 +58,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { Store, Mail, Lock, Phone, FileText, ImagePlus, Coins, MapPin } from 'lucide-react'
+import { Store, Mail, Lock, Phone, FileText, ImagePlus, Coins, MapPin, Timer, TimerIcon } from 'lucide-react'
 import { Country, State, City } from 'country-state-city'
 
 export default function RegisterRestaurant() {
@@ -148,6 +148,17 @@ export default function RegisterRestaurant() {
         <Input icon={<Phone />} name="contact" placeholder="Contact Number" onChange={handleChange} />
         <Input icon={<Lock />} name="password" placeholder="Password" type="password" onChange={handleChange} />
 
+        <div>
+          <label className="block mb-1 text-sm font-semibold">Opening Time :</label>
+          <Input icon={<Timer />} name="openingTime" placeholder="Opening Time" type="time" onChange={handleChange} />
+        </div>
+
+        <div>
+          <label className="block mb-1 text-sm font-semibold">Closing Time :</label>
+          <Input icon={<TimerIcon />} name="closingTime" placeholder="Closing Time" type="time" onChange={handleChange} />
+        </div>
+
+        
         {/* Country, State, City */}
         <div className="col-span-1">
           <label className="block mb-1 text-sm font-semibold">Country</label>
