@@ -14,6 +14,7 @@ import Footer from './components/Footer';
 import Order from './pages/Order/Order';
 import Settings from './pages/Settings';
 import Restaurant from './pages/Restaurant/Restaurant';
+import RestaurantEditForm from './pages/Restaurant/RestaurantEditForm';
 
 function AppContent() {
   const location = useLocation();
@@ -45,6 +46,7 @@ function AppContent() {
         <Route path="/menu" element={<Menu />} />
         <Route path="/order" element={<Order />} />
         <Route path="/setting" element={<Settings />} />
+        <Route path="/restaurant/edit/:id" element={<RestaurantEditForm />} />
       </Routes>
 
       {!isHomePage && !isLogin && !isRegister && <Footer />}

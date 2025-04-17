@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/RestaurantController');
 const upload = require('../middleware/upload');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Public endpoints
 // router.post('/register', restaurantController.register);
@@ -13,6 +14,10 @@ router.get('/', restaurantController.getAll);
 
 router.get('/me', restaurantController.getLoggedRestaurant);
 
+// Update logged restaurant
+router.put('/update', restaurantController.update);
+// router.put('/update', authMiddleware, upload.array('images', 5), restaurantController.updateLoggedRestaurant);
+
 router.get('/:id', restaurantController.getOne);
 // router.post('/', restaurantController.create);
 router.post('/', upload.array('images', 5), restaurantController.create); // max 5 images
@@ -21,6 +26,7 @@ router.delete('/:id', restaurantController.remove);
 
 // Availability toggle
 router.put('/:id/availability', restaurantController.toggleAvailability);
+
 
 
 

@@ -78,11 +78,59 @@ exports.create = async (req, res) => {
   res.status(201).json(restaurant);
 };
 
-// Update restaurant
+
+
 exports.update = async (req, res) => {
-  const updated = await Restaurant.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(updated);
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) return res.status(401).json({ message: 'No token provided' });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const restaurantId = decoded.id;
+
+    // Get current restaurant
+    const restaurant = await Restaurant.findById(restaurantId);
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+
+    // Update fields
+    const {
+      name,
+      email,
+      password,
+      contact,
+      description,
+      deliveryFee,
+      address,
+      status,
+    } = req.body;
+
+    if (name) restaurant.name = name;
+    if (email) restaurant.email = email;
+    if (contact) restaurant.contact = contact;
+    if (description) restaurant.description = description;
+    if (deliveryFee) restaurant.deliveryFee = deliveryFee;
+    if (address) restaurant.address = address;
+    if (status) restaurant.status = status;
+    if (password) {
+      const bcrypt = require('bcryptjs');
+      const hashed = await bcrypt.hash(password, 10);
+      restaurant.password = hashed;
+    }
+
+    // Update image if uploaded
+    if (req.files && req.files.length > 0) {
+      const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
+      restaurant.image = imagePaths;
+    }
+
+    await restaurant.save();
+    res.status(200).json({ message: 'Restaurant updated successfully', restaurant });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Something went wrong' });
+  }
 };
+
 
 // Delete restaurant
 exports.remove = async (req, res) => {
