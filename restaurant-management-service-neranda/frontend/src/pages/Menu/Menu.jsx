@@ -174,12 +174,12 @@ export default function Menu() {
               >
                 <Download className="mr-2" size={18} /> Excel
               </button>
-              <button 
+              {/* <button 
                 onClick={handleExportPDF} 
                 className="flex items-center justify-center bg-red-600 text-white px-4 py-2.5 rounded-lg hover:bg-red-700 transition duration-300 w-full md:w-auto"
               >
                 <FileText className="mr-2" size={18} /> PDF
-              </button>
+              </button> */}
             </div>
           </div>
 

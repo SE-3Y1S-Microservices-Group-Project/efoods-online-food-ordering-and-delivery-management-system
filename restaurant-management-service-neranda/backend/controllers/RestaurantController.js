@@ -53,11 +53,27 @@ exports.login = async (req, res) => {
 };
 
 // Toggle Availability
+// exports.toggleAvailability = async (req, res) => {
+//   const { isAvailable } = req.body;
+//   const updated = await Restaurant.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
+//   res.json(updated);
+// };
+
 exports.toggleAvailability = async (req, res) => {
-  const { isAvailable } = req.body;
-  const updated = await Restaurant.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
-  res.json(updated);
+  try {
+    const { isAvailable } = req.body;
+    const restaurant = await Restaurant.findByIdAndUpdate(
+      req.params.id,
+      { isAvailable },
+      { new: true }
+    );
+    res.status(200).json(restaurant);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update availability' });
+  }
 };
+
 
 // Get restaurant by ID
 exports.getOne = async (req, res) => {

@@ -43,6 +43,26 @@ export default function Restaurant() {
     }
   };
 
+  const handleToggleAvailability = async () => {
+    try {
+      const updated = await axios.put(
+        `http://localhost:5000/api/restaurants/${restaurant._id}/availability`,
+        { isAvailable: !restaurant.isAvailable },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+  
+      setRestaurant(updated.data); // update frontend view
+    } catch (err) {
+      console.error('Error updating availability:', err);
+      alert('Failed to update availability status');
+    }
+  };
+  
+
   const handleEdit = () => {
     navigate(`/restaurant/edit/${restaurant._id}`);
   };
@@ -138,9 +158,22 @@ export default function Restaurant() {
               <p className="flex items-center mt-2 text-white">
                 <MapPin className="w-4 h-4 mr-1" /> {restaurant.address}
               </p>
-              <span className={`mt-4 inline-block px-3 py-1 rounded-full text-sm font-medium ${restaurant.isAvailable ? 'bg-green-200 text-green-800' : 'bg-red-100 text-red-800'}`}>
+
+              
+              {/* <span className={`mt-4 inline-block px-3 py-1 rounded-full text-sm font-medium ${restaurant.isAvailable ? 'bg-green-200 text-green-800' : 'bg-red-100 text-red-800'}`}>
                 {restaurant.isAvailable ? 'Open Now' : 'Closed'}
-              </span>
+              </span> */}
+
+              <button
+                onClick={handleToggleAvailability}
+                className={`mt-4 inline-block px-4 py-3 rounded-full text-sm font-semibold transition duration-200 ${
+                  restaurant.isAvailable
+                    ? 'bg-green-300 text-green-800 hover:bg-green-500'
+                    : 'bg-red-200 text-red-800 hover:bg-red-400'
+                }`}
+              >
+                {restaurant.isAvailable ? '🔓 Open Now (Click to Close)' : '🔒 Closed (Click to Open)'}
+              </button>
 
             </div>
           </div>
@@ -179,8 +212,20 @@ export default function Restaurant() {
 />
                 <InfoItem icon={<Clock />} label="Hours" value={restaurant.openingTime + ' - ' + restaurant.closingTime} />
                 <InfoItem icon={<Award />} label="Specialty" value="Authentic Sri Lankan Cuisine" />
+                
               </div>
+              
             </div>
+
+            <div className='bg-green-100 rounded-lg p-5 shadow-md border items-center text-center'>
+              <h2 className="text-2xl font-bold mb-4">Revenue Section</h2>
+
+                <div>
+                  {/* <RevenueTable /> */}
+                </div>
+
+            </div>
+            
           </div>
         </div>
       </div>
