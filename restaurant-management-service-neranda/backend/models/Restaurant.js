@@ -27,3 +27,8 @@ const restaurantSchema = new mongoose.Schema({
 
 
 module.exports = mongoose.model('Restaurant', restaurantSchema);
+
+ // Prevent OverwriteModelError
+// module.exports = (restaurantDB) => {
+//   return restaurantDB.models.Restaurant || restaurantDB.model('Restaurant', restaurantSchema);
+// };

@@ -1,3 +1,4 @@
+// const { restaurantDB } = req.app.locals.dbs;
 const MenuItem = require('../models/MenuItem');
 
 // Create Menu Item

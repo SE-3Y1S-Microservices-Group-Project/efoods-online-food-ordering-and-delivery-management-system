@@ -27,9 +27,4 @@ router.delete('/:id', restaurantController.remove);
 // Availability toggle
 router.put('/:id/availability', restaurantController.toggleAvailability);
 
-
-
-
-
-
 module.exports = router;
