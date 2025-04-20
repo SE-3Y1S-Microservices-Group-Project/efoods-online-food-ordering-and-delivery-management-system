@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import {
   X, Store, Mail, MapPin, Lock, Phone,
-  FileText, ImagePlus, Coins
+  FileText, ImagePlus, Coins,
+  Timer,
+  TimerIcon
 } from 'lucide-react'
 
 import { Country, State, City } from 'country-state-city'
@@ -16,6 +18,8 @@ export default function RegisterForm({ onClose, onSuccess }) {
     description: '',
     deliveryFee: '',
     status: 'pending',
+    openingTime: '09:00',
+    closingTime: '22:00',
   })
 
   const [images, setImages] = useState([])
@@ -100,6 +104,9 @@ export default function RegisterForm({ onClose, onSuccess }) {
           <InputWithIcon icon={<Mail />} name="email" placeholder="Email" onChange={handleChange} />
           <InputWithIcon icon={<Phone />} name="contact" placeholder="Contact" onChange={handleChange} />
           <InputWithIcon icon={<Lock />} name="password" type="password" placeholder="Password" onChange={handleChange} />
+
+          {/* <InputWithIcon icon={<Timer />} name="openingTime" placeholder="Opening Time" onChange={handleChange} />
+          <InputWithIcon icon={<TimerIcon />} name="closingTime" placeholder="Closing Time" onChange={handleChange} /> */}
 
           {/* Location Dropdowns */}
           <div className="col-span-2">

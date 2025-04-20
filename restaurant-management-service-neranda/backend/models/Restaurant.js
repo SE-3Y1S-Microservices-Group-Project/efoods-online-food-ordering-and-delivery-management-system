@@ -7,7 +7,7 @@ const restaurantSchema = new mongoose.Schema({
   password: String,
   contact: String,
   description: String,
-  address: String,
+  address: String, // full address text or street address
   country: String,
   state: String,
   city: String,
@@ -19,9 +19,16 @@ const restaurantSchema = new mongoose.Schema({
   deliveryFee: { type: Number, default: 0 },
   status: { type: String, default: 'pending' },
   isAvailable: { type: Boolean, default: true },
-});
+  openingTime: { type: String, default: '09:00' },
+  closingTime: { type: String, default: '22:00' },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+})
 
-// Prevent OverwriteModelError
+
+// module.exports = mongoose.model('Restaurant', restaurantSchema);
+
+ // Prevent OverwriteModelError
 module.exports = (restaurantDB) => {
   return restaurantDB.models.Restaurant || restaurantDB.model('Restaurant', restaurantSchema);
 };

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/RestaurantController');
 const upload = require('../middleware/upload');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Public endpoints
 // router.post('/register', restaurantController.register);
@@ -10,6 +11,13 @@ router.post('/login', restaurantController.login);
 
 // CRUD endpoints
 router.get('/', restaurantController.getAll);
+
+router.get('/me', restaurantController.getLoggedRestaurant);
+
+// Update logged restaurant
+router.put('/update', restaurantController.update);
+// router.put('/update', authMiddleware, upload.array('images', 5), restaurantController.updateLoggedRestaurant);
+
 router.get('/:id', restaurantController.getOne);
 // router.post('/', restaurantController.create);
 router.post('/', upload.array('images', 5), restaurantController.create); // max 5 images
@@ -19,6 +27,30 @@ router.delete('/:id', restaurantController.remove);
 // Availability toggle
 router.put('/:id/availability', restaurantController.toggleAvailability);
 
-
-
 module.exports = router;
+
+// const express = require('express');
+// const router = express.Router();
+// const restaurantController = require('../controllers/RestaurantController');
+// const upload = require('../middleware/upload');
+// const authMiddleware = require('../middleware/authMiddleware');
+
+// // Public endpoints
+// router.post('/register', upload.array('images', 5), restaurantController.register); // With images max 5
+// router.post('/login', restaurantController.login);
+
+// // CRUD endpoints
+// router.get('/', restaurantController.getAll);
+// router.get('/:id', restaurantController.getOne);
+// router.post('/', upload.array('images', 5), restaurantController.create); // max 5 images
+// router.put('/:id', restaurantController.update); // Admin endpoint
+// router.delete('/:id', restaurantController.remove);
+
+// // Availability toggle
+// router.put('/:id/availability', restaurantController.toggleAvailability);
+
+// // Restaurant owner endpoints (authenticated)
+// router.get('/me', authMiddleware, restaurantController.getLoggedRestaurant);
+// router.put('/update', authMiddleware, upload.array('images', 5), restaurantController.updateLoggedRestaurant);
+
+// module.exports = router;
