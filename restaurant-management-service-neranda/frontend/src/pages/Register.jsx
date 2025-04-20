@@ -116,7 +116,9 @@ export default function RegisterRestaurant() {
       for (let key in formData) {
         data.append(key, formData[key])
       }
+
       data.append('address', `${selectedCity}, ${selectedState}, ${selectedCountry}`)
+
       images.forEach((file) => {
         data.append('images', file)
       })

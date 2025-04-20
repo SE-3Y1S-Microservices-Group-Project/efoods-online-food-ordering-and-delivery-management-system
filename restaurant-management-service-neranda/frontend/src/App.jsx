@@ -11,7 +11,7 @@ import Login from './pages/Login';
 import Menu from './pages/Menu/Menu';
 import NavBar from './components/NavBar';
 import Footer from './components/Footer';
-import Order from './pages/Order/Order';
+// import Order from './pages/Order/Order';
 import Settings from './pages/Settings';
 import Restaurant from './pages/Restaurant/Restaurant';
 import RestaurantEditForm from './pages/Restaurant/RestaurantEditForm';
@@ -44,7 +44,7 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/menu" element={<Menu />} />
-        <Route path="/order" element={<Order />} />
+        {/* <Route path="/order" element={<Order />} /> */}
         <Route path="/setting" element={<Settings />} />
         <Route path="/restaurant/edit/:id" element={<RestaurantEditForm />} />
       </Routes>

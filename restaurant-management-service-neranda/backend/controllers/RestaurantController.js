@@ -1,9 +1,11 @@
-const Restaurant = require('../models/Restaurant');
+// const Restaurant = require('../models/Restaurant');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 // Register a restaurant
 exports.register = async (req, res) => {
+    const { restaurantDB } = req.app.locals.dbs;
+    const Restaurant = require('../models/Restaurant')(restaurantDB);
     try {
       const images = req.files ? req.files.map(file => `/uploads/restaurants/${file.filename}`) : [];
   
@@ -32,6 +34,8 @@ exports.register = async (req, res) => {
 
 // Login
 exports.login = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   try {
     const { email, password } = req.body;
     const restaurant = await Restaurant.findOne({ email });
@@ -60,6 +64,8 @@ exports.login = async (req, res) => {
 // };
 
 exports.toggleAvailability = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   try {
     const { isAvailable } = req.body;
     const restaurant = await Restaurant.findByIdAndUpdate(
@@ -77,18 +83,24 @@ exports.toggleAvailability = async (req, res) => {
 
 // Get restaurant by ID
 exports.getOne = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   const restaurant = await Restaurant.findById(req.params.id);
   res.json(restaurant);
 };
 
 // Get all restaurants
 exports.getAll = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   const restaurants = await Restaurant.find();
   res.json(restaurants);
 };
 
 // Create new restaurant
 exports.create = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   const restaurant = new Restaurant(req.body);
   await restaurant.save();
   res.status(201).json(restaurant);
@@ -97,6 +109,8 @@ exports.create = async (req, res) => {
 
 
 exports.update = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ message: 'No token provided' });
@@ -150,11 +164,15 @@ exports.update = async (req, res) => {
 
 // Delete restaurant
 exports.remove = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   await Restaurant.findByIdAndDelete(req.params.id);
   res.json({ message: 'Restaurant deleted' });
 };
 
 exports.getLoggedRestaurant = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const Restaurant = require('../models/Restaurant')(restaurantDB);
   try {
 
     const token = req.headers.authorization?.split(' ')[1];

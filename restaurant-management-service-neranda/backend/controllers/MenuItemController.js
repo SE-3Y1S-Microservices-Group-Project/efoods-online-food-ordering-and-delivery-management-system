@@ -1,8 +1,10 @@
 // const { restaurantDB } = req.app.locals.dbs;
-const MenuItem = require('../models/MenuItem');
+//const MenuItem = require('../models/MenuItem');
 
 // Create Menu Item
 exports.create = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
     const {
       name,
@@ -62,6 +64,8 @@ exports.create = async (req, res) => {
 
 // Get All
 exports.getAll = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
     const items = await MenuItem.find().populate('restaurantId', 'name');
     res.json(items);
@@ -74,6 +78,8 @@ exports.getAll = async (req, res) => {
 
 // Get One
 exports.getOne = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
     const item = await MenuItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: 'Item not found' });
@@ -85,6 +91,8 @@ exports.getOne = async (req, res) => {
 
 // Update
 exports.update = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
     const updateData = req.body;
 
@@ -125,6 +133,8 @@ exports.update = async (req, res) => {
 
 // Delete
 exports.remove = async (req, res) => {
+  const { restaurantDB } = req.app.locals.dbs;
+  const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
     await MenuItem.findByIdAndDelete(req.params.id);
     res.json({ message: 'Menu item deleted' });
