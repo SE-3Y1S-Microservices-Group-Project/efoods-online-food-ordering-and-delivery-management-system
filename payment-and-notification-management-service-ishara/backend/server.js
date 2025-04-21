@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/connectDB');
 const paymentRoutes = require("./routes/payment");
-const checkoutRoutes = require("./routes/checkout");
+
 
 dotenv.config();
 
@@ -19,7 +19,7 @@ connectDB().then((connections) => {
 
   // Payment routes
   app.use("/api/payment", paymentRoutes);
-  app.use("/api/checkout", checkoutRoutes);
+
 
   const PORT = process.env.PORT || 5003;
   app.listen(PORT, () => {

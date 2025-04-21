@@ -11,6 +11,8 @@ const PaymentSchema = new mongoose.Schema({
   },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  paymentId: { type: String }, // PayHere payment ID
+
 });
 
 module.exports = (paymentDB) => {
