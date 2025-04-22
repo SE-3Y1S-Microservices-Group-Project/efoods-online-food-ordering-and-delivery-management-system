@@ -14,7 +14,7 @@ export default function Register() {
   }
 
   return (
-    <div className="p-8 max-w-md mx-auto">
+    <div className="bg-gradient-to-br from-green-200 to-green-50 p-8 max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-4">Register</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" placeholder="Name" onChange={e => setForm({ ...form, name: e.target.value })} className="border w-full p-2" required />

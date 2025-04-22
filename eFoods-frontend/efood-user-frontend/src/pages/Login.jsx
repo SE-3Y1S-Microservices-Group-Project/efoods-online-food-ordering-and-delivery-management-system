@@ -15,7 +15,7 @@ export default function Login() {
   }
 
   return (
-    <div className="p-8 max-w-md mx-auto">
+    <div className="bg-gradient-to-br from-green-200 to-green-50 p-8 max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="email" placeholder="Email" onChange={e => setForm({ ...form, email: e.target.value })} className="border w-full p-2" required />
