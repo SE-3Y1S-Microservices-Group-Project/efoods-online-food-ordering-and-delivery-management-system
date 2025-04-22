@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const generatePayHereHash = require("../utils/generatePayHereHash");
+
 
 //Fetch data to the heckout page
 exports.getCheckoutInfo = async (req, res) => {
@@ -42,30 +44,10 @@ exports.getCheckoutInfo = async (req, res) => {
 };
 
 
-// //Add New Card
-// exports.addCard = async (req, res) => {
-//   const { userId, cardNumber, expiryDate, cvv } = req.body;
-
-//   if (!userId || !cardNumber || !expiryDate || !cvv) {
-//     return res.status(400).json({ message: "All card fields are required" });
-//   }
-
-//   const paymentDB = req.app.locals.dbs.paymentDB;
-//   const Card = require("../models/Card")(paymentDB);
-
-//   try {
-//     const newCard = new Card({ userId, cardNumber, expiryDate, cvv });
-//     await newCard.save();
-
-//     res.status(201).json({ message: "Card saved successfully", card: newCard });
-//   } catch (err) {
-//     console.error("Add card error:", err);
-//     res.status(500).json({ message: "Failed to save card" });
-//   }
-// };
-
 
 //Redirect user to PayHere for payment
+const crypto = require("crypto");
+
 exports.processPayment = async (req, res) => {
   const { userId, orderId, cardId } = req.body;
 
@@ -74,7 +56,6 @@ exports.processPayment = async (req, res) => {
   const Card = require("../models/Card")(req.app.locals.dbs.paymentDB);
 
   try {
-    // Fetch order and user
     const order = await Order.findById(orderId);
     const user = await User.findById(userId);
 
@@ -82,7 +63,7 @@ exports.processPayment = async (req, res) => {
       return res.status(404).json({ message: "Order or user not found" });
     }
 
-    // Optional: validate saved card if selected
+    // Optional: Validate card if selected
     if (cardId) {
       const savedCard = await Card.findOne({ _id: cardId, userId });
       if (!savedCard) {
@@ -90,7 +71,7 @@ exports.processPayment = async (req, res) => {
       }
     }
 
-    // Build payment form data
+    // Build payment form
     const form = {
       merchant_id: process.env.PAYHERE_MERCHANT_ID,
       return_url: process.env.PAYHERE_RETURN_URL,
@@ -108,6 +89,27 @@ exports.processPayment = async (req, res) => {
       city: order.shippingInfo.city,
       country: order.shippingInfo.country,
     };
+    
+// Debug logging
+console.log("Generating hash with these values:");
+console.log({
+  merchant_id: form.merchant_id,
+  order_id: form.order_id,
+  amount: form.amount,
+  currency: form.currency,
+  secret_key: process.env.PAYHERE_SECRET_KEY
+});
+
+const hash = generatePayHereHash(
+  form.merchant_id,
+  form.order_id,
+  form.amount,
+  form.currency,
+  process.env.PAYHERE_SECRET_KEY
+);
+
+console.log("Generated hash:", hash);
+form.hash = hash;
 
     // Auto-submit HTML form
     const formHtml = `
@@ -251,11 +253,11 @@ exports.getSavedCards = async (req, res) => {
 
 exports.saveNewCard = async (req, res) => {
   const Card = require("../models/Card")(req.app.locals.dbs.paymentDB);
-  const { userId, cardNumber, expiryDate, cardHolderName } = req.body;
+  const { userId, cardNumber, expiryDate, cvv, cardHolderName } = req.body;
 
   try {
     // Validate required fields
-    if (!userId || !cardNumber || !expiryDate || !cardHolderName) {
+    if (!userId || !cardNumber || !expiryDate || !cvv || !cardHolderName) {
       return res.status(400).json({ message: "All fields are required." });
     }
 
@@ -267,6 +269,7 @@ exports.saveNewCard = async (req, res) => {
       userId,
       cardNumber: maskedCardNumber,
       expiryDate,
+      cvv,
       cardHolderName,
     });
 
@@ -277,3 +280,33 @@ exports.saveNewCard = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+// Remove a saved card
+exports.removeSavedCard = async (req, res) => {
+  try {
+    const { paymentDB } = req.app.locals.dbs;
+    const Card = require('../models/Card')(paymentDB); // Your card model (called 'Card' inside SavedCard.js)
+
+    const { cardId } = req.params;
+    const { userId } = req.body; // This ensures only the correct user deletes their card
+
+    //  Validate that the card belongs to the user
+    const card = await Card.findOne({ _id: cardId, userId });
+
+    if (!card) {
+      return res.status(404).json({ message: 'Card not found or unauthorized access' });
+    }
+
+    // 🧹 Delete the card
+    await Card.findByIdAndDelete(cardId);
+
+    res.status(200).json({ message: 'Card removed successfully' });
+  } catch (error) {
+    console.error(' Error while deleting card:', error.message);
+    res.status(500).json({ message: 'Server error while deleting card' });
+  }
+};
+
+
+
+

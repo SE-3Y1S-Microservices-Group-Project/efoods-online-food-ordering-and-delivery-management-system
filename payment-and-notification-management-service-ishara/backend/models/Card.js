@@ -14,9 +14,13 @@ const CardSchema = new mongoose.Schema({
     required: true
   },
   cvv: {
+    type: String,   
+    required: true
+  },
+  cardHolderName: {
     type: String,
     required: true
-  }
+  },
 }, { timestamps: true });
 
 module.exports = (paymentDB) => {
