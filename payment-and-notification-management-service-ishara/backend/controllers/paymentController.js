@@ -1,17 +1,18 @@
 const mongoose = require("mongoose");
 const generatePayHereHash = require("../utils/generatePayHereHash");
 
-
-//Fetch data to the heckout page
 exports.getCheckoutInfo = async (req, res) => {
   const { userId } = req.params;
 
   const orderDB = req.app.locals.dbs.orderDB;
   const paymentDB = req.app.locals.dbs.paymentDB;
+  const restaurantDB = req.app.locals.dbs.restaurantDB;
 
   const Order = require("../../../order-management-service-sasin/backend/models/Order")(orderDB);
   const User = require("../../../order-management-service-sasin/backend/models/User")(orderDB);
   const Card = require("../models/Card")(paymentDB);
+  const Restaurant = require("../../../restaurant-management-service-neranda/backend/models/Restaurant")(restaurantDB);
+  const MenuItem = require("../../../restaurant-management-service-neranda/backend/models/MenuItem")(restaurantDB);
 
   try {
     const latestOrder = await Order.findOne({ userId }).sort({ createdAt: -1 });
@@ -22,9 +23,29 @@ exports.getCheckoutInfo = async (req, res) => {
 
     const savedCards = await Card.find({ userId });
 
+    const itemsWithDetails = await Promise.all(
+      latestOrder.items.map(async (item) => {
+        console.log(`Fetching details for Item: ${item._id}, Restaurant ID: ${item.restaurantId}, MenuItem ID: ${item.menuitemId}`);
+
+        // Convert to ObjectId correctly using new keyword
+        const restaurant = await Restaurant.findById(new mongoose.Types.ObjectId(item.restaurantId));
+        const menuItem = await MenuItem.findById(new mongoose.Types.ObjectId(item.menuitemId));
+
+        console.log("Fetched Restaurant:", restaurant);
+        console.log("Fetched MenuItem:", menuItem);
+
+        return {
+          ...item,
+          restaurantName: restaurant ? restaurant.name : "Unknown Restaurant",
+          menuItemName: menuItem ? menuItem.name : "Unknown Menu Item",
+          price: menuItem ? menuItem.price : 0 // Assuming price is part of MenuItem
+        };
+      })
+    );
+
     res.json({
       order: {
-        items: latestOrder.items,
+        items: itemsWithDetails,
         totalAmount: latestOrder.totalAmount,
         shippingInfo: latestOrder.shippingInfo
       },
@@ -42,7 +63,6 @@ exports.getCheckoutInfo = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch checkout data" });
   }
 };
-
 
 
 //Redirect user to PayHere for payment

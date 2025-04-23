@@ -13,7 +13,7 @@ const dumpRequest = (req, res, next) => {
     next();
   };
   
-  router.post("/process", dumpRequest, paymentController.processPayment);
+  router.post("/proceed", dumpRequest, paymentController.processPayment);
 
 // Handles PayHere's payment notification callback
 router.post("/notify", paymentController.notifyPayment);
@@ -22,7 +22,7 @@ router.get("/saved-cards/:userId", paymentController.getSavedCards);
 // New route to save card
 router.post("/card", paymentController.saveNewCard);
 //Remove Saved card
-router.delete('/saved-cards/:cardId', paymentController.removeSavedCard);
+router.delete('/remove-card/:cardId', paymentController.removeSavedCard);
 
 
 
