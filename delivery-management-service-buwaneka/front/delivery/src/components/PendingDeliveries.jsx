@@ -22,6 +22,10 @@ const PendingDeliveries = () => {
     };
 
     fetchPendingDeliveries();
+    
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchPendingDeliveries, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleAccept = async (deliveryId) => {
@@ -99,7 +103,7 @@ const PendingDeliveries = () => {
               
               <div className="mt-4">
                 <p className="text-sm text-gray-600">Estimated Delivery Time:</p>
-                <p className="font-medium">{delivery.estimatedDeliveryTime} minutes</p>
+                <p className="font-medium">{delivery.estimatedDeliveryTime || 30} minutes</p>
               </div>
               
               <div className="mt-4">

@@ -1,6 +1,37 @@
 import Driver from '../models/driverModel.js';
 import jwt from 'jsonwebtoken';
 
+//get orders from a different database (sasin)
+export const getOrders = async (req, res) => {
+  try {
+    // Get Order model from the database connections
+    const { Order } = req.app.locals.dbs;
+    
+    if (!Order) {
+      return res.status(500).json({
+        success: false,
+        message: 'Order model not available'
+      });
+    }
+    
+    // Fetch all orders from the database
+    const orders = await Order.find({});
+    
+    return res.status(200).json({
+      success: true,
+      count: orders.length,
+      data: orders
+    });
+  } catch (error) {
+    console.error('Error fetching orders:'.red.bold, error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch orders',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+}
+
 // Generate JWT Token
 const generateToken = (driver) => {
   return jwt.sign(

@@ -5,7 +5,7 @@ const locationService = {
   updateDriverLocation: async (location) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(
+      const response = await axios.put(
         '/api/drivers/location',
         { 
           latitude: location.lat,

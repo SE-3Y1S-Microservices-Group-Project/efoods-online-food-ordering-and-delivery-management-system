@@ -6,10 +6,10 @@ import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // Geocoding route
-router.get('/api/geocode', geocodeController.geocodeAddress);
+router.get('/geocode', geocodeController.geocodeAddress);
 
 // Driver location routes
-router.post('/api/drivers/location', protect, driverLocationController.updateLocation);
-router.get('/api/drivers/:id/location', driverLocationController.getLocation);
+router.post('/drivers/location', protect, driverLocationController.updateLocation);
+router.get('/drivers/:id/location', driverLocationController.getLocation);
 
 export default router;
