@@ -4,11 +4,11 @@ const cors = require('cors');
 const connectDB = require('./config/connectDB');
 const paymentRoutes = require("./routes/payment");
 
-
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 let dbConnections = {};
@@ -17,9 +17,8 @@ connectDB().then((connections) => {
   dbConnections = connections;
   app.locals.dbs = dbConnections;
 
-  // Payment routes
+  // Routes
   app.use("/api/payment", paymentRoutes);
-
 
   const PORT = process.env.PORT || 5003;
   app.listen(PORT, () => {

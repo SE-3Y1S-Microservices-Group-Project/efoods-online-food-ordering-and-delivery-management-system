@@ -3,6 +3,9 @@ import { Routes, Route, useParams } from "react-router-dom";
 import Checkout from "./pages/Checkout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 const CheckoutWrapper = () => {
   const { userId } = useParams();
@@ -11,11 +14,13 @@ const CheckoutWrapper = () => {
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/checkout/:userId" element={<CheckoutWrapper />} />
-      <Route path="/payment-success" element={<PaymentSuccess />} />
-      <Route path="/payment-failed" element={<PaymentFailed />} />
-    </Routes>
+    <Elements stripe={stripePromise}>
+      <Routes>
+        <Route path="/checkout/:userId" element={<CheckoutWrapper />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
+      </Routes>
+    </Elements>
   );
 };
 
