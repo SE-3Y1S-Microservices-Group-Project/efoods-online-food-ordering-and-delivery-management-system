@@ -9,6 +9,9 @@ import Checkout from './pages/Checkout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import UserNavBar from './components/userNavBar';
 import Home from './pages/Home';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
+import Footer from './components/Footer';
 
 const router = createBrowserRouter([
   {
@@ -16,6 +19,8 @@ const router = createBrowserRouter([
     element: <AppUser />,
     children: [
       { path: '', element: <Home /> },
+      { path: 'aboutus', element: <AboutUs /> },
+      { path: 'contactus', element: <ContactUs /> },
       { path: 'signin', element: <SignIn /> },
       { path: 'signup', element: <SignUp /> },
       {
@@ -24,6 +29,7 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <Restaurants />
+            <Footer />
           </ProtectedRoute>
         ),
       },
@@ -33,6 +39,7 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <RestaurantDetails />
+            <Footer />
           </ProtectedRoute>
         ),
       },
@@ -42,6 +49,7 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <Cart />
+            <Footer />
           </ProtectedRoute>
         ),
       },
@@ -51,6 +59,7 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <Checkout />
+            <Footer />
           </ProtectedRoute>
         ),
       },

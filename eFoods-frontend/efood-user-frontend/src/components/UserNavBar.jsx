@@ -13,7 +13,7 @@ const UserNavBar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('*');
+    navigate('/');
   };
 
   const goToProfile = () => {
@@ -58,8 +58,8 @@ const UserNavBar = () => {
           <div className="hidden md:flex items-center space-x-4">
             <NavLink to="/">Home</NavLink>
             <NavLink to="/restaurants">Restaurants</NavLink>
-            <NavLink to="/about">About Us</NavLink>
-            <NavLink to="/contact">Contact Us</NavLink>
+            <NavLink to="/aboutus">About Us</NavLink>
+            <NavLink to="/contactus">Contact Us</NavLink>
           </div>
 
           {/* Right Side: Auth - Desktop */}
