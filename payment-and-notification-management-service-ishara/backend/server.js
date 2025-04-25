@@ -8,7 +8,10 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({
+  origin: 'http://localhost:5173',  // frontend origin
+  credentials: true                 // allow cookies and headers like Authorization
+}));
 app.use(express.json());
 
 let dbConnections = {};

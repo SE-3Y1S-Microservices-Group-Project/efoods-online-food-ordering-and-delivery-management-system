@@ -106,7 +106,8 @@ exports.createCheckoutSession = async (req, res) => {
       }
     });
 
-    res.json({ sessionId: session.id });
+    res.json({ sessionId: session.id, url: session.url });
+
   } catch (error) {
     console.error('Stripe session creation error:', error);
     res.status(500).json({ error: 'Failed to create payment session' });
@@ -173,6 +174,29 @@ exports.handleWebhook = async (req, res) => {
 
   res.status(200).json({ received: true });
 };
+
+
+//Get payment session details
+exports.getSessionDetails = async (req, res) => {
+  const { sessionId } = req.params;
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    res.json({
+      customerName: session.customer_details.name,
+      customerEmail: session.customer_details.email,
+      amount: session.amount_total,
+      status: session.payment_status,
+      created: session.created,
+      sessionId: session.id
+    });
+  } catch (error) {
+    console.error('Failed to retrieve Stripe session:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve Stripe session details' });
+  }
+};
+
 
 
 // //Redirect user to PayHere for payment

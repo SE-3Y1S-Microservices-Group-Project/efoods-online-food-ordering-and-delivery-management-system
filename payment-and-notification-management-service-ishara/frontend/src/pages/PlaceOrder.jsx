@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { loadStripe } from '@stripe/stripe-js';
 const stripePromise = loadStripe("pk_test_51RGxa9QwYkP7b05Rhk7zOc5FqNp2go8wELiqw6sFbpK874upT4hV3crf94pDEYHSi6YHdaGXuKJH0JXR3fjB8pxI00fTmS611t");
+import { useAuth } from '../../../../eFoods-frontend/efood-user-frontend/src/context/AuthContext';
+import { useCart } from '../../../../eFoods-frontend/efood-user-frontend/src/context/CartContext';
+import API from '../../../../eFoods-frontend/efood-user-frontend/src/utils/api'; // Your Axios instance
+import { useLocation } from 'react-router-dom';
 
-
-const Checkout = ({ userId }) => {
+const PlaceOrder = ({ userId }) => {
   const [checkoutData, setCheckoutData] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const location = useLocation();
+  
 
 
 
@@ -31,41 +35,25 @@ const Checkout = ({ userId }) => {
 
 
 
-
-
-
-  const handlePayment = async (orderId) => {
-    try {
-      setLoading(true);
-      
-      // Create checkout session
-      const response = await axios.post(
-        "http://localhost:5003/api/payment/process",
-        {
-          userId,
-          orderId
-        }
-      );
+  const { user } = useAuth();
+  const { cart } = useCart(); // you may not need the whole cart now, but it's good to have
   
-      // Redirect to Stripe
-      const stripe = await stripePromise;
-
-    const { sessionId } = response.data;
-
-    const result = await stripe.redirectToCheckout({
-      sessionId: sessionId,
-    });
-      if (error) {
-        throw error;
-      }
+  const handlePayment = async () => {
+    try {
+      const orderId = location.state?.orderId;
+      const res = await API.post(`http://localhost:5003/api/payment/process`, {
+        userId: user._id,
+        orderId: orderId
+      });
+  
+      // Redirect to Stripe Checkout
+      window.location.href = res.data.url;
     } catch (error) {
-      console.error("Payment error:", error);
-      alert(`Payment failed: ${error.message || "Please try again"}`);
-    } finally {
-      setLoading(false);
+      console.error('Payment error:', error);
     }
   };
-   
+  
+  
 
   if (loading) return <p>Loading checkout info...</p>;
   if (!checkoutData) return <p>No data available</p>;
@@ -131,17 +119,16 @@ const Checkout = ({ userId }) => {
       {/* Pay Button */}
       <div className="mt-6">
         <button
-  onClick={() => handlePayment(checkoutData.order._id)}
-  disabled={loading}
-  className={`bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg w-full ${
-    loading ? 'opacity-50 cursor-not-allowed' : ''
-  }`}
+  onClick={handlePayment}
+  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
 >
-  {loading ? 'Processing...' : `Pay Now (Rs. ${checkoutData.order.totalAmount})`}
+Pay Now (Rs. ${checkoutData.order.totalAmount})
 </button>
+
+
       </div>
     </div>
   );
 };
 
-export default Checkout;
+export default PlaceOrder;
