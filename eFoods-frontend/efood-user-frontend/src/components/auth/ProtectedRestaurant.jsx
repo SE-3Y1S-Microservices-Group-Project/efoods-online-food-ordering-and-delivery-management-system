@@ -4,7 +4,7 @@ import { RestaurantContext } from '../../context/RestaurantContext';
 
 const ProtectedRestaurant = ({ children }) => {
   const { user } = useContext(RestaurantContext);
-  return user ? children : <Navigate to="/register" />;
+  return user ? children : <Navigate to="/restaurant-signin" />;
 };
 
 export default ProtectedRestaurant;

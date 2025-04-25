@@ -7,10 +7,58 @@ import RestaurantDetails from './pages/RestaurantDetails';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import UserNavBar from './components/userNavBar';
+import Home from './pages/Home';
 
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <AppUser />,
+    children: [
+      { path: '', element: <Home /> },
+      { path: 'signin', element: <SignIn /> },
+      { path: 'signup', element: <SignUp /> },
+      {
+        path: 'restaurants',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <Restaurants />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'restaurants/:id',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <RestaurantDetails />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'cart',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <Cart />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'checkout',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <Checkout />
+          </ProtectedRoute>
+        ),
+      },
+    ],
+  },
+
+  {
+    path: '/rts',
     element: <AppUser />,
     children: [
       { path: 'signin', element: <SignIn /> },
@@ -19,7 +67,8 @@ const router = createBrowserRouter([
         path: 'restaurants',
         element: (
           <ProtectedRoute>
-            <Restaurants />
+            <UserNavBar />
+              <Restaurants />
           </ProtectedRoute>
         ),
       },
@@ -27,7 +76,8 @@ const router = createBrowserRouter([
         path: 'restaurants/:id',
         element: (
           <ProtectedRoute>
-            <RestaurantDetails />
+            <UserNavBar />
+              <RestaurantDetails />
           </ProtectedRoute>
         ),
       },
@@ -35,7 +85,8 @@ const router = createBrowserRouter([
         path: 'cart',
         element: (
           <ProtectedRoute>
-            <Cart />
+            <UserNavBar />
+              <Cart />
           </ProtectedRoute>
         ),
       },
@@ -43,7 +94,8 @@ const router = createBrowserRouter([
         path: 'checkout',
         element: (
           <ProtectedRoute>
-            <Checkout />
+            <UserNavBar />
+              <Checkout />
           </ProtectedRoute>
         ),
       },

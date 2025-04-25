@@ -1,12 +1,12 @@
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 
-function AppUser() {
+const AppUser = () => {
   return (
-    <div>
-      {/* Optional: Add Navbar or Layout here */}
+    <>
       <Outlet />
-    </div>
+    </>
   );
-}
+};
 
 export default AppUser;

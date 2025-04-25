@@ -18,7 +18,7 @@ export const CartProvider = ({ children }) => {
       console.error("Fetch cart error:", err);
     }
   };
-  
+
   const addToCart = async (item) => {
     try {
       await API.post('/cart', item); // corrected endpoint
@@ -26,10 +26,28 @@ export const CartProvider = ({ children }) => {
     } catch (err) {
       console.error("Add to cart error:", err);
     }
-  };  
+  };
+
+  const updateItemQty = async (restaurantId, menuItemId, quantity) => {
+    try {
+      await API.put(`/cart/${user._id}`, { restaurantId, menuItemId, quantity });
+      fetchCart();
+    } catch (err) {
+      console.error("Update item quantity error:", err);
+    }
+  };
+
+  const removeFromCart = async (restaurantId, menuItemId) => {
+    try {
+      await API.delete(`/cart/${user._id}/${menuItemId}`);
+      fetchCart();
+    } catch (err) {
+      console.error("Remove from cart error:", err);
+    }
+  };
 
   return (
-    <CartContext.Provider value={{ cart, fetchCart, addToCart }}>
+    <CartContext.Provider value={{ cart, fetchCart, addToCart, updateItemQty, removeFromCart }}>
       {children}
     </CartContext.Provider>
   );
