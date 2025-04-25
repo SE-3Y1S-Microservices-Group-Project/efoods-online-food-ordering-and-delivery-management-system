@@ -15,9 +15,6 @@ const PlaceOrder = () => {
   const [checkoutData, setCheckoutData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-
-
-
   useEffect(() => {
     const fetchCheckoutData = async () => {
       if (!user?._id || !orderId) {
@@ -27,7 +24,6 @@ const PlaceOrder = () => {
 
       try {
         const res = await axios.get(`http://localhost:5003/api/payment/placeorder/${user._id}`);
-
         setCheckoutData(res.data);
         setLoading(false);
       } catch (err) {
@@ -39,109 +35,176 @@ const PlaceOrder = () => {
     fetchCheckoutData();
   }, [user, orderId]);
 
-
   const handlePayment = async () => {
-  try {
-    console.log("Initiating payment..."); // STEP 1
+    try {
+      console.log("Initiating payment...");
+      const orderId = location.state?.orderId;
+      if (!user?._id || !orderId) {
+        console.warn("Missing user ID or order ID");
+        return;
+      }
 
-    const orderId = location.state?.orderId;
-    if (!user?._id || !orderId) {
-      console.warn("Missing user ID or order ID");
-      return;
+      const res = await API.post(`http://localhost:5003/api/payment/process`, {
+        userId: user._id,
+        orderId: orderId
+      });
+
+      console.log("Stripe session response:", res.data);
+      if (res.data && res.data.url) {
+        console.log("Redirecting to Stripe checkout...");
+        window.location.href = res.data.url;
+      } else {
+        console.warn("No URL returned from backend");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
     }
-
-    const res = await API.post(`http://localhost:5003/api/payment/process`, {
-      userId: user._id,
-      orderId: orderId
-    });
-
-    console.log("Stripe session response:", res.data); // STEP 2
-
-    if (res.data && res.data.url) {
-      console.log("Redirecting to Stripe checkout..."); // STEP 3
-      window.location.href = res.data.url;
-    } else {
-      console.warn("No URL returned from backend");
-    }
-
-  } catch (error) {
-    console.error("Payment error:", error); // STEP 4
-  }
-};
+  };
   
-  
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f3a3]">
+      <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5CB338] mx-auto mb-4"></div>
+        <p className="text-lg font-semibold text-[#FB4141]">Loading checkout info...</p>
+      </div>
+    </div>
+  );
 
-  if (loading) return <p>Loading checkout info...</p>;
-  if (!checkoutData) return <p>No data available</p>;
-
-
-
-
-
+  if (!checkoutData) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f5f3a3]">
+      <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+        <p className="text-lg font-semibold text-[#FB4141]">No data available</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Checkout</h2>
+    <div className="min-h-screen bg-[#f5f3a3] py-8 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold text-[#5CB338] mb-2">eFoods Order Details</h2>
+          <div className="h-1 w-20 bg-[#FFC145] mx-auto"></div>
+        </div>
 
-      {/* Customer Info */}
-      <div className="mb-6 bg-white p-4 rounded-lg shadow">
-        <h3 className="font-bold text-lg mb-2">Customer Information</h3>
-        <p>
-          {checkoutData.customer.firstName} {checkoutData.customer.lastName}
-        </p>
-        <p>Email: {checkoutData.customer.email}</p>
-        <p>Phone: {checkoutData.customer.contact}</p>
-      </div>
+        {/* Progress Steps */}
+        <div className="flex justify-between items-center mb-8 relative">
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-full bg-[#5CB338] flex items-center justify-center text-white font-bold mb-1">1</div>
+            <span className="text-sm">Cart</span>
+          </div>
+          <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-full bg-[#5CB338] flex items-center justify-center text-white font-bold mb-1">2</div>
+            <span className="text-sm">Details</span>
+          </div>
+          <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
+          <div className="flex flex-col items-center">
+            <div className="w-10 h-10 rounded-full bg-[#FFC145] flex items-center justify-center text-white font-bold mb-1">3</div>
+            <span className="text-sm font-semibold">Payment</span>
+          </div>
+        </div>
 
-      {/* Shipping Info */}
-      <div className="mb-6 bg-white p-4 rounded-lg shadow">
-        <h3 className="font-bold text-lg mb-2">Shipping Information</h3>
-        <p>Address: {checkoutData.order.shippingInfo.address}</p>
-        <p>City: {checkoutData.order.shippingInfo.city}</p>
-        <p>
-          Postal Code: {checkoutData.order.shippingInfo.postalCode || "N/A"}
-        </p>
-        <p>Country: {checkoutData.order.shippingInfo.country}</p>
-      </div>
+        {/* Customer Info */}
+        <div className="mb-6 bg-white p-6 rounded-lg shadow-md border-l-4 border-[#5CB338]">
+          <h3 className="font-bold text-lg mb-3 text-[#5CB338] flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+            </svg>
+            Customer Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-600">Name</p>
+              <p className="font-medium">{checkoutData.customer.firstName} {checkoutData.customer.lastName}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Email</p>
+              <p className="font-medium">{checkoutData.customer.email}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Phone</p>
+              <p className="font-medium">{checkoutData.customer.contact}</p>
+            </div>
+          </div>
+        </div>
 
-      {/* Order Summary */}
-      <div className="mb-6 bg-white p-4 rounded-lg shadow">
-        <h3 className="font-bold text-lg mb-2">Order Summary</h3>
-        <ul className="divide-y">
-          {checkoutData.order.items.map((item, idx) => (
-            <li key={idx} className="py-2">
-              <div className="flex justify-between">
-                <span>
-                  <strong>{item.menuItemName}</strong> (x{item.quantity})
-                </span>
-                <span>Rs. {item.price * item.quantity}</span>
+        {/* Shipping Info */}
+        <div className="mb-6 bg-white p-6 rounded-lg shadow-md border-l-4 border-[#5CB338]">
+          <h3 className="font-bold text-lg mb-3 text-[#5CB338] flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+            </svg>
+            Shipping Information
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-600">Address</p>
+              <p className="font-medium">{checkoutData.order.shippingInfo.address}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">City</p>
+              <p className="font-medium">{checkoutData.order.shippingInfo.city}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Postal Code</p>
+              <p className="font-medium">{checkoutData.order.shippingInfo.postalCode || "N/A"}</p>
+            </div>
+            <div>
+              <p className="text-gray-600">Country</p>
+              <p className="font-medium">{checkoutData.order.shippingInfo.country}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Summary */}
+        <div className="mb-6 bg-white p-6 rounded-lg shadow-md border-l-4 border-[#5CB338]">
+          <h3 className="font-bold text-lg mb-3 text-[#5CB338] flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+              <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+            </svg>
+            Order Summary
+          </h3>
+          <div className="divide-y">
+            {checkoutData.order.items.map((item, idx) => (
+              <div key={idx} className="py-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">{item.menuItemName} <span className="text-[#FB4141]">(x{item.quantity})</span></p>
+                    <p className="text-sm text-gray-500">{item.restaurantName}</p>
+                  </div>
+                  <p className="font-semibold">Rs. {item.price * item.quantity}</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-600">
-                {item.restaurantName}
-              </p>
-            </li>
-          ))}
-        </ul>
-        <div className="border-t pt-2 mt-2">
-          <p className="font-bold text-lg flex justify-between">
-            <span>Total:</span>
-            <span>Rs. {checkoutData.order.totalAmount}</span>
+            ))}
+          </div>
+          <div className="border-t border-[#FFC145] pt-4 mt-3">
+            <p className="font-bold text-xl flex justify-between">
+              <span>Total Amount:</span>
+              <span className="text-[#5CB338]">Rs. {checkoutData.order.totalAmount}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Payment Button */}
+        <div className="text-center mt-8">
+          <button
+            onClick={handlePayment}
+            className="bg-gradient-to-r from-[#5CB338] to-[#FFC145] text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[#FB4141] focus:ring-opacity-50"
+          >
+            Pay Now (Rs. {checkoutData.order.totalAmount})
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline-block ml-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+          <p className="text-sm text-gray-500 mt-3">
+            Secure payment processed by Stripe
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
           </p>
         </div>
-      </div>
-
-     
-
-      {/* Pay Button */}
-      <div className="mt-6">
-        <button
-  onClick={handlePayment}
-  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
->
-Pay Now (Rs. ${checkoutData.order.totalAmount})
-</button>
-
-
       </div>
     </div>
   );
