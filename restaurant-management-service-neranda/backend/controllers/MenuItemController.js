@@ -68,6 +68,70 @@ exports.create = async (req, res) => {
   }
 };
 
+// exports.create = async (req, res) => {
+//   const { restaurantDB } = req.app.locals.dbs;
+//   const MenuItem = require('../models/MenuItem')(restaurantDB);
+//   try {
+//     const {
+//       name,
+//       description,
+//       price,
+//       category,
+//       discount,
+//       prepTime,
+//       tags,
+//       ingredients,
+//       stock,
+//       lowStockThreshold,
+//       isAvailable,
+//       sizes,
+//       addOns,
+//     } = req.body;
+
+//     // Get restaurant ID from authenticated user or request
+//     const restaurantId = req.body.restaurantId || req.user.restaurantId;
+    
+//     if (!restaurantId) {
+//       return res.status(400).json({ error: 'Restaurant ID is required' });
+//     }
+
+//     const parsedSizes = sizes ? JSON.parse(sizes) : [];
+//     const parsedAddOns = addOns ? JSON.parse(addOns) : [];
+
+//     const finalPrice = price - (price * (discount || 0) / 100);
+
+//     let imageUrls = [];
+//     if (req.file) {
+//       imageUrls = [`/uploads/menuitems/${req.file.filename}`];
+//     }
+
+//     const menuItem = new MenuItem({
+//       name,
+//       description,
+//       price,
+//       category,
+//       discount,
+//       finalPrice,
+//       prepTime,
+//       tags: tags?.split(',').map(t => t.trim()) || [],
+//       ingredients: ingredients?.split(',').map(i => i.trim()) || [],
+//       stock,
+//       lowStockThreshold,
+//       isAvailable: isAvailable === 'true',
+//       sizes: parsedSizes,
+//       addOns: parsedAddOns,
+//       restaurantId, // Set the restaurant ID here
+//       image: imageUrls
+//     });
+
+//     await menuItem.save();
+//     res.status(201).json(menuItem);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(400).json({ error: 'Invalid input. Please check your data.' });
+//   }
+// };
+
 
 // Get All
 exports.getAll = async (req, res) => {
@@ -82,6 +146,24 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+// Get All (filtered by restaurant)
+// exports.getAll = async (req, res) => {
+//   const { restaurantDB } = req.app.locals.dbs;
+//   const MenuItem = require('../models/MenuItem')(restaurantDB);
+//   try {
+//     // Get restaurantId from request (could be from token, query param, etc.)
+//     const restaurantId = req.query.restaurantId || req.user.restaurantId;
+    
+//     if (!restaurantId) {
+//       return res.status(400).json({ error: 'Restaurant ID is required' });
+//     }
+
+//     const items = await MenuItem.find({ restaurantId }).populate('restaurantId', 'name');
+//     res.json(items);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
 
 
 // Get One
