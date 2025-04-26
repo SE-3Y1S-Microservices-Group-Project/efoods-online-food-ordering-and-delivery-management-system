@@ -1,35 +1,26 @@
 import React, { useState } from 'react'
-import axios from 'axios'
+import { useRestaurant } from '../context/RestaurantContext'
 import { useNavigate } from 'react-router-dom'
 import { LogIn } from 'lucide-react'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { login } = useRestaurant();
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async e => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      const res = await axios.post('http://localhost:5000/api/restaurants/login', form)
-      localStorage.setItem('token', res.data.token)
-
-      const email = res.data.restaurant.email;
-      const restaurantName = res.data.restaurant.name; // Assuming the restaurant name is in the response
-      // alert(`Welcome back, ${email}!`);
-
-      localStorage.setItem('email', email);
-      localStorage.setItem('restaurantName', restaurantName);
-
-
-      alert('Login successful!')
-      navigate('/dashboard')
+      const data = await login(form.email, form.password);
+      alert('Login successful!');
+      navigate('/restaurant-dashboard');
     } catch (error) {
-      console.error(error)
-      alert(error.response?.data?.message || 'Login failed')
+      console.error(error);
+      alert(error.response?.data?.message || 'Login failed');
     }
   }
 
@@ -51,7 +42,7 @@ export default function Login() {
 
         <div className="mt-4 text-center">
           <a
-            href="/register"
+            href="/restaurant-signup"
             className="text-sm text-sky-600 hover:underline hover:text-sky-800 transition duration-150"
           >
             Haven't registered yet?

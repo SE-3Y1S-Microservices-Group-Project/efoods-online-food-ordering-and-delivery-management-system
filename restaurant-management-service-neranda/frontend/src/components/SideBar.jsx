@@ -7,7 +7,7 @@ export default function SideBar() {
 
   const logout = () => {
     localStorage.clear()
-    navigate('/login')
+    navigate('/restaurant-signin')
   }
 
   return (
@@ -21,31 +21,31 @@ export default function SideBar() {
         <nav className="mt-4">
           <ul className="space-y-2">
 
-            <a href="/dashboard">
+            <a href="/restaurant-dashboard">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaHome className="mr-2" /> Dashboard
                 </li>
             </a>
 
-            <a href="/restaurant">
+            <a href="/restaurant-my">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaListAlt className="mr-2" /> Restaurant Management
                 </li>
             </a>
             
-            <a href="/menu">
+            <a href="/restaurant-menu">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaListAlt className="mr-2" /> Menu Management
                 </li>
             </a>
 
-            <a href="/order">
+            <a href="/restaurant-order">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaBars className="mr-2" /> Order Management
                 </li>
             </a>
 
-            <a href="/setting">
+            <a href="/restaurant-settings">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaCog className="mr-2" /> Settings
                 </li>            

@@ -71,7 +71,7 @@ export default function RegisterRestaurant() {
       })
 
       alert('Restaurant registered successfully!')
-      navigate('/login')
+      navigate('/restaurant-signin')
     } catch (err) {
       console.error(err)
       alert('Error registering restaurant')
