@@ -65,6 +65,8 @@ exports.login = async (req, res) => {
     );
 
     res.json({ token, restaurant });
+
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -3,7 +3,7 @@ import Sidebar from '../../components/SideBar';
 import axios from 'axios';
 import MenuForm from './MenuForm';
 import MenuEditForm from './MenuEditForm';
-import { FilePlus, FileText, Download, Pencil, Trash2, Search, X, ChevronRight } from 'lucide-react';
+import { FilePlus, Download, Pencil, Trash2, Search, X, ChevronRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -38,7 +38,7 @@ const fetchMenuItems = async () => {
   try {
     // Get restaurantId from localStorage or your auth state
     const restaurantId = localStorage.getItem('restaurantId');
-    // alert(localStorage.getItem('restaurantName'));
+    // alert(localStorage.getItem('restaurantName')); 
     
     const res = await axios.get(`http://localhost:5000/api/menu?restaurantId=${restaurantId}`, {
       headers: {

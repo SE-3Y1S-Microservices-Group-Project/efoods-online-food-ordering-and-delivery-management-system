@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const restaurantController = require('../controllers/RestaurantController');
 const upload = require('../middleware/upload');
-const authMiddleware = require('../middleware/authMiddleware');
 
 // Public endpoints
 // router.post('/register', restaurantController.register);
