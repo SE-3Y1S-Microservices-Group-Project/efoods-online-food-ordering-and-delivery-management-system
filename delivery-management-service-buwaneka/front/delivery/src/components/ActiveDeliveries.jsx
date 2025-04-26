@@ -10,6 +10,9 @@ const ActiveDeliveries = () => {
   const [claimedOrderIds, setClaimedOrderIds] = useState([]);
   const [deliveredOrderIds, setDeliveredOrderIds] = useState([]);
 
+
+
+
   // Load claimed and delivered orders from localStorage on component mount
   useEffect(() => {
     try {
@@ -463,12 +466,12 @@ const ActiveDeliveries = () => {
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Order Total:</p>
-              <p className="font-medium">${typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
+              <p className="font-medium">LKR {typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
             </div>
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Your Earnings:</p>
-              <p className="font-medium text-green-600">${selectedDelivery.estimatedEarnings}</p>
+              <p className="font-medium text-green-600">LKR {selectedDelivery.estimatedEarnings}</p>
             </div>
             
             <div className="mt-6">
@@ -507,12 +510,12 @@ const ActiveDeliveries = () => {
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Order Total:</p>
-                  <p className="font-medium">${typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
+                  <p className="font-medium">LKR {typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
                 </div>
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Estimated Earnings:</p>
-                  <p className="font-medium text-green-600">${order.estimatedEarnings}</p>
+                  <p className="font-medium text-green-600">LKR {order.estimatedEarnings}</p>
                 </div>
                 
                 <div className="mt-6">
@@ -566,7 +569,7 @@ const ActiveDeliveries = () => {
               
               <div className="mt-4">
                 <p className="text-sm text-gray-600">Earnings:</p>
-                <p className="font-medium text-green-600">${delivery.estimatedEarnings}</p>
+                <p className="font-medium text-green-600">LKR {delivery.estimatedEarnings}</p>
               </div>
               
               <div className="mt-8 border-t pt-4">
@@ -615,6 +618,10 @@ const ActiveDeliveries = () => {
           ))}
         </div>
       )}
+
+      {/*  bellow lines if crashes with above 2 state lines and its useeffect funtion */}
+      
+
     </div>
   );
 };
