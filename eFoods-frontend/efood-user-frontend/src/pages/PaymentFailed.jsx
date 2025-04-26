@@ -1,6 +1,6 @@
 const PaymentFailed = () => {
   return (
-    <div className="min-h-screen bg-[#f5f3a3] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#255F38] flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
         {/* Failure Icon */}
         <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#FB4141] mb-6">
@@ -14,16 +14,16 @@ const PaymentFailed = () => {
 
         {/* Warning pattern */}
         <div className="flex justify-center space-x-1 mb-6">
-          {['#FB4141', '#FFC145', '#FB4141', '#FFC145', '#FB4141'].map((color, i) => (
+          {['#FB4141', '#1F7D53', '#FB4141', '#1F7D53', '#FB4141'].map((color, i) => (
             <div key={i} className="w-2 h-8 rounded-full" style={{ backgroundColor: color }}></div>
           ))}
         </div>
 
         <div className="space-y-4">
-          <button className="w-full bg-[#5CB338] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#4CA32D] transition">
+          <button className="w-full bg-[#27391C] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#1F7D53] transition">
             Try Payment Again
           </button>
-          <button className="w-full border border-[#5CB338] text-[#5CB338] font-bold py-3 px-4 rounded-lg hover:bg-[#F0F7ED] transition">
+          <button className="w-full border border-[#27391C] text-[#1F7D53] font-bold py-3 px-4 rounded-lg hover:bg-[#F0F7ED] transition">
             Contact Support
           </button>
         </div>

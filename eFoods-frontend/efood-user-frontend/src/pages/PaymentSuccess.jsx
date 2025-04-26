@@ -98,38 +98,38 @@ const PaymentSuccess = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f3a3] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#255F38] flex items-center justify-center p-4">
       <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center">
         {/* Success Icon */}
-        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#5CB338] mb-6">
+        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-[#255F38] mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
           </svg>
         </div>
 
-        <h1 className="text-3xl font-bold text-[#5CB338] mb-3">Payment Successful!</h1>
+        <h1 className="text-3xl font-bold text-[#255F38] mb-3">Payment Successful!</h1>
         <p className="text-gray-600 mb-6">Your order has been confirmed. Thank you for ordering with e-foods.</p>
 
         {/* Confetti effect */}
         <div className="flex justify-center space-x-1 mb-6">
-          {['#5CB338', '#FFC145', '#FB4141', '#5CB338', '#FFC145'].map((color, i) => (
+          {['#255F38', '#1F7D53', '#FFC145', '#1F7D53', '#255F38'].map((color, i) => (
             <div key={i} className="w-2 h-8 rounded-full" style={{ backgroundColor: color }}></div>
           ))}
         </div>
 
         {paymentDetails && referenceNumber && (
           <div className="bg-[#F8F9FA] p-4 rounded-lg mb-6 text-left">
-            <h3 className="font-semibold text-[#5CB338] mb-2">Order Summary</h3>
+            <h3 className="font-semibold text-[#255F38] mb-2">Order Summary</h3>
             <p className="text-sm"><span className="font-medium">Reference:</span> {referenceNumber}</p>
             <p className="text-sm"><span className="font-medium">Amount:</span> Rs. {paymentDetails.amount / 100}</p>
-            <p className="text-sm"><span className="font-medium">Status:</span> <span className="text-[#5CB338] font-bold">{paymentDetails.status}</span></p>
+            <p className="text-sm"><span className="font-medium">Status:</span> <span className="text-[#1F7D53] font-bold">{paymentDetails.status}</span></p>
           </div>
         )}
 
         {paymentDetails && referenceNumber && (
           <button
             onClick={generatePDF}
-            className="w-full bg-gradient-to-r from-[#5CB338] to-[#FFC145] text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center"
+            className="w-full bg-gradient-to-r from-[#1F7D53] to-[#FFC145] text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
