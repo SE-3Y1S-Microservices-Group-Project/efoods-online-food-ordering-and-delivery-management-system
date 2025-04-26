@@ -32,6 +32,53 @@ export const getOrders = async (req, res) => {
   }
 }
 
+//delete
+// Delete an order from a different database
+export const deleteOrder = async (req, res) => {
+  try {
+    const { Order } = req.app.locals.dbs;
+    
+    if (!Order) {
+      return res.status(500).json({
+        success: false,
+        message: 'Order model not available'
+      });
+    }
+    
+    const orderId = req.params.id;
+    
+    // Check if the order exists
+    const order = await Order.findById(orderId);
+    
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+    
+    // Delete the order
+    await Order.findByIdAndDelete(orderId);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting order:'.red.bold, error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete order',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+}
+
+
+
+
+//bellow is my model controllers
+
 // Generate JWT Token
 const generateToken = (driver) => {
   return jwt.sign(

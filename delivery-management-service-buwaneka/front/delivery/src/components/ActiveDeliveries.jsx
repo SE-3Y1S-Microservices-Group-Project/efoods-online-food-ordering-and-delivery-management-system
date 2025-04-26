@@ -7,6 +7,26 @@ const ActiveDeliveries = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [claimedOrderIds, setClaimedOrderIds] = useState([]);
+  const [deliveredOrderIds, setDeliveredOrderIds] = useState([]);
+
+  // Load claimed and delivered orders from localStorage on component mount
+  useEffect(() => {
+    try {
+      const storedClaimedIds = localStorage.getItem('claimedOrderIds');
+      if (storedClaimedIds) {
+        setClaimedOrderIds(JSON.parse(storedClaimedIds));
+      }
+      
+      // Load delivered order IDs
+      const storedDeliveredIds = localStorage.getItem('deliveredOrderIds');
+      if (storedDeliveredIds) {
+        setDeliveredOrderIds(JSON.parse(storedDeliveredIds));
+      }
+    } catch (err) {
+      console.error('Failed to load order IDs from localStorage:', err);
+    }
+  }, []);
 
   // Fetch orders from the connected database
   useEffect(() => {
@@ -16,19 +36,16 @@ const ActiveDeliveries = () => {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         
         const response = await axios.get('http://localhost:5001/api/drivers/orders', { headers });
-        console.log('API Response:', response.data); // Log the response for debugging
+        console.log('API Response:', response.data);
         
-        // Check if data is in the expected format (with success, count, and data properties)
+        // Check if data is in the expected format
         let ordersData;
         if (response.data && response.data.success && Array.isArray(response.data.data)) {
           ordersData = response.data.data;
-          console.log('Found orders data in response.data.data:', ordersData);
         } else if (Array.isArray(response.data)) {
           ordersData = response.data;
-          console.log('Found orders data directly in response.data:', ordersData);
         } else {
-          // For testing, create some dummy data when no orders are returned
-          console.log('No orders found or unexpected format - creating test data');
+          // For testing, create dummy data when no orders are returned
           ordersData = [
             {
               _id: 'test123456',
@@ -53,9 +70,8 @@ const ActiveDeliveries = () => {
           ];
         }
         
-        // Convert orders to delivery format - less restrictive mapping
+        // Convert orders to delivery format
         const newOrders = ordersData.map(order => {
-          console.log('Processing order:', order); // Log each order for debugging
           return {
             _id: order._id || `order-${Math.random().toString(36).substr(2, 9)}`,
             orderNumber: order._id ? order._id.toString().slice(-6) : Math.floor(100000 + Math.random() * 900000).toString(),
@@ -74,12 +90,14 @@ const ActiveDeliveries = () => {
           };
         });
         
-        console.log('Processed orders:', newOrders);
+        // Filter out orders that have been claimed or delivered by this driver
+        const availableOrders = newOrders.filter(order => 
+          order._id && 
+          !claimedOrderIds.includes(order._id) && // Filter out claimed orders
+          !deliveredOrderIds.includes(order._id)   // Filter out delivered orders
+        );
         
-        // Less restrictive filtering - only filter out orders that are completely invalid
-        const availableOrders = newOrders.filter(order => order._id);
-        
-        console.log('Available orders after filtering:', availableOrders);
+        console.log('Available orders after filtering out claimed and delivered orders:', availableOrders);
         setOrders(availableOrders);
         
         // Get active deliveries from localStorage
@@ -89,11 +107,8 @@ const ActiveDeliveries = () => {
             const activeOrdersFromStorage = JSON.parse(storedDeliveries);
             console.log('Active deliveries from storage:', activeOrdersFromStorage);
             
-            // Ensure the data is an array
             if (Array.isArray(activeOrdersFromStorage) && activeOrdersFromStorage.length > 0) {
               setActiveDeliveries(activeOrdersFromStorage);
-            } else {
-              console.log('No valid active deliveries in storage');
             }
           }
         } catch (storageErr) {
@@ -120,7 +135,12 @@ const ActiveDeliveries = () => {
             totalAmount: 35.00
           }
         ];
-        setOrders(dummyOrders);
+        // Filter out claimed and delivered orders even with dummy data
+        const filteredDummyOrders = dummyOrders.filter(order => 
+          !claimedOrderIds.includes(order._id) && 
+          !deliveredOrderIds.includes(order._id)
+        );
+        setOrders(filteredDummyOrders);
         setLoading(false);
       }
     };
@@ -132,7 +152,7 @@ const ActiveDeliveries = () => {
     
     // Clean up interval on component unmount
     return () => clearInterval(interval);
-  }, []);
+  }, [claimedOrderIds, deliveredOrderIds]); // Added deliveredOrderIds as dependency
 
   useEffect(() => {
     // Save active deliveries to localStorage whenever they change
@@ -146,9 +166,69 @@ const ActiveDeliveries = () => {
     }
   }, [activeDeliveries]);
 
+  // New function to update earnings data
+  const updateEarningsData = (delivery) => {
+    try {
+      // Get current earnings data
+      const earningsData = JSON.parse(localStorage.getItem('earningsData')) || {
+        total: 0,
+        deliveries: 0,
+        tips: 0,
+        bonuses: 0,
+        count: 0,
+        history: []
+      };
+
+      // Parse the estimated earnings amount
+      const earningsAmount = parseFloat(delivery.estimatedEarnings);
+      
+      // Calculate tip amount (assume 40% of earnings is from tips)
+      const tipAmount = earningsAmount * 0.4;
+      
+      // Calculate delivery pay (assume 60% of earnings is from delivery pay)
+      const deliveryPay = earningsAmount * 0.6;
+      
+      // Update earnings data
+      earningsData.total += earningsAmount;
+      earningsData.deliveries += deliveryPay;
+      earningsData.tips += tipAmount;
+      earningsData.count += 1;
+      
+      // Add to history
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      // Check if there's an entry for today
+      const todayEntry = earningsData.history.find(entry => entry.date === formattedDate);
+      
+      if (todayEntry) {
+        // Update existing entry
+        todayEntry.amount += earningsAmount;
+        todayEntry.deliveries += 1;
+      } else {
+        // Create new entry
+        earningsData.history.push({
+          id: Date.now(),
+          date: formattedDate,
+          amount: earningsAmount,
+          deliveries: 1,
+          status: 'Paid'
+        });
+      }
+      
+      // Save updated earnings data
+      localStorage.setItem('earningsData', JSON.stringify(earningsData));
+      console.log('Updated earnings data:', earningsData);
+    } catch (err) {
+      console.error('Failed to update earnings data:', err);
+    }
+  };
+
   const updateDeliveryStatus = async (deliveryId, status) => {
     try {
-      // Just update local state for now
+      // Find the delivery in the active deliveries
+      const delivery = activeDeliveries.find(d => d._id === deliveryId);
+      
       if (status === 'picked_up') {
         const updatedDeliveries = activeDeliveries.map(delivery => 
           delivery._id === deliveryId ? { ...delivery, status } : delivery
@@ -161,12 +241,32 @@ const ActiveDeliveries = () => {
         }
         
         toast(`Order marked as picked up!`);
+
+        // Call the backend to update order status
+        try {
+          const token = localStorage.getItem('token');
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          
+          await axios.put(`http://localhost:5001/api/orders/${deliveryId}/status`, 
+            { status },
+            { headers }
+          );
+          console.log(`Order ${deliveryId} status updated to ${status} in backend`);
+        } catch (apiErr) {
+          console.error('Failed to update status in backend:', apiErr);
+          // Continue with local updates even if API call fails
+        }
       } else if (status === 'delivered') {
+        // Add earnings data before removing the delivery
+        if (delivery) {
+          updateEarningsData(delivery);
+        }
+        
         // Remove from active list if delivered
         const updatedDeliveries = activeDeliveries.filter(delivery => delivery._id !== deliveryId);
         setActiveDeliveries(updatedDeliveries);
         
-        // Also update localStorage to remove the delivery
+        // Update localStorage to remove the delivery
         try {
           localStorage.setItem('activeDeliveries', JSON.stringify(updatedDeliveries));
         } catch (err) {
@@ -178,7 +278,30 @@ const ActiveDeliveries = () => {
           setSelectedDelivery(null);
         }
         
+        // Remove from claimedOrderIds when order is delivered
+        const updatedClaimedIds = claimedOrderIds.filter(id => id !== deliveryId);
+        setClaimedOrderIds(updatedClaimedIds);
+        localStorage.setItem('claimedOrderIds', JSON.stringify(updatedClaimedIds));
+        
+        // Add to deliveredOrderIds when order is delivered
+        const updatedDeliveredIds = [...deliveredOrderIds, deliveryId];
+        setDeliveredOrderIds(updatedDeliveredIds);
+        localStorage.setItem('deliveredOrderIds', JSON.stringify(updatedDeliveredIds));
+        
         toast(`Order delivered successfully!`);
+        
+        // Delete the order from the order microservice database
+        try {
+          const token = localStorage.getItem('token');
+          const headers = token ? { Authorization: `Bearer ${token}` } : {};
+          
+          // Call the delete endpoint
+          await axios.delete(`http://localhost:5001/api/drivers/orders/${deliveryId}`, { headers });
+          console.log(`Order ${deliveryId} deleted from order microservice database`);
+        } catch (apiErr) {
+          console.error('Failed to delete order from database:', apiErr);
+          // Continue with local updates even if API call fails
+        }
       }
     } catch (err) {
       setError(`Failed to update delivery status: ${err.message}`);
@@ -187,8 +310,21 @@ const ActiveDeliveries = () => {
 
   const handleAcceptOrder = async (order) => {
     try {
-      // For now, just update the UI without making an API call
-      // In a real implementation, you would call your backend API to update the order status
+      // Add an API call to mark order as claimed by this driver
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const driverId = localStorage.getItem('userId'); // Assuming driver ID is stored here
+        
+        await axios.post(`http://localhost:5001/api/orders/${order._id}/claim`, 
+          { driverId: driverId || 'current-driver' },
+          { headers }
+        );
+        console.log(`Order ${order._id} claimed in backend`);
+      } catch (apiErr) {
+        console.error('Failed to claim order in backend:', apiErr);
+        // Continue with local updates even if API call fails
+      }
       
       // Remove from orders list
       const updatedOrders = orders.filter(o => o._id !== order._id);
@@ -202,16 +338,19 @@ const ActiveDeliveries = () => {
       
       const updatedDeliveries = [...activeDeliveries, newDelivery];
       setActiveDeliveries(updatedDeliveries);
-      console.log('Order accepted:', newDelivery);
+      
+      // Track claimed order ID to prevent it from showing up again
+      const updatedClaimedIds = [...claimedOrderIds, order._id];
+      setClaimedOrderIds(updatedClaimedIds);
       
       // Update localStorage
       try {
         localStorage.setItem('activeDeliveries', JSON.stringify(updatedDeliveries));
+        localStorage.setItem('claimedOrderIds', JSON.stringify(updatedClaimedIds));
       } catch (err) {
         console.error('Failed to update localStorage:', err);
       }
       
-      // Display success notification
       toast(`Order #${order.orderNumber} accepted successfully!`);
     } catch (err) {
       setError(`Failed to accept order: ${err.message}`);

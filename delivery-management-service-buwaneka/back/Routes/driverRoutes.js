@@ -9,6 +9,7 @@ import {
   getDriverById,
   updateDriver,
   getOrders, // get orders from a different database
+  deleteOrder,// delete an order from a different database
   deleteDriver
 } from '../Controllers/driverController.js';
 import { protect } from '../Middleware/authMiddleware.js';
@@ -22,6 +23,8 @@ router.post('/login', loginDriver);
 // Get orders from a different database
 // This route needs to be BEFORE the /:id route to avoid conflict
 router.get('/orders', getOrders);
+router.delete('/orders/:id', deleteOrder);
+
 
 // Protected routes with authentication
 router.get('/profile', protect, getDriverProfile);

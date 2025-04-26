@@ -14,56 +14,184 @@ const EarningsOverview = () => {
     history: []
   });
 
-  // Mock data - in a real app, this would come from an API
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const mockEarnings = {
-        week: {
-          total: 346.75,
-          deliveries: 189.50,
-          tips: 132.25,
-          bonuses: 25.00,
-          average: 19.26,
-          history: [
-            { id: 1, date: '2025-04-10', amount: 78.50, deliveries: 4, status: 'Paid' },
-            { id: 2, date: '2025-04-09', amount: 93.25, deliveries: 5, status: 'Paid' },
-            { id: 3, date: '2025-04-08', amount: 65.50, deliveries: 3, status: 'Paid' },
-            { id: 4, date: '2025-04-07', amount: 109.50, deliveries: 6, status: 'Paid' }
-          ]
-        },
-        month: {
-          total: 1286.25,
-          deliveries: 725.50,
-          tips: 435.75,
-          bonuses: 125.00,
-          average: 18.38,
-          history: [
-            { id: 5, date: '2025-04-03', amount: 342.50, deliveries: 18, status: 'Paid' },
-            { id: 6, date: '2025-03-27', amount: 315.25, deliveries: 17, status: 'Paid' },
-            { id: 7, date: '2025-03-20', amount: 289.50, deliveries: 16, status: 'Paid' },
-            { id: 8, date: '2025-03-13', amount: 339.00, deliveries: 19, status: 'Paid' }
-          ]
-        },
-        year: {
-          total: 12568.75,
-          deliveries: 7150.50,
-          tips: 4218.25,
-          bonuses: 1200.00,
-          average: 17.95,
-          history: [
-            { id: 9, date: '2025-04', amount: 1286.25, deliveries: 70, status: 'Paid' },
-            { id: 10, date: '2025-03', amount: 1352.50, deliveries: 74, status: 'Paid' },
-            { id: 11, date: '2025-02', amount: 1125.75, deliveries: 63, status: 'Paid' },
-            { id: 12, date: '2025-01', amount: 1195.25, deliveries: 67, status: 'Paid' }
-          ]
+    // Load real earnings data from localStorage instead of mock data
+    const loadEarningsData = () => {
+      setLoading(true);
+      try {
+        // Get stored earnings data
+        const storedData = localStorage.getItem('earningsData');
+        if (!storedData) {
+          setLoading(false);
+          return; // No data available yet
         }
-      };
-      
-      setEarnings(mockEarnings[period]);
-      setLoading(false);
-    }, 800);
+
+        const earningsData = JSON.parse(storedData);
+        
+        // Process earnings data based on selected period
+        const processedData = processEarningsByPeriod(earningsData, period);
+        setEarnings(processedData);
+      } catch (err) {
+        console.error('Failed to load earnings data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEarningsData();
   }, [period]);
+
+  // Process raw earnings data into period-specific summaries
+  const processEarningsByPeriod = (data, selectedPeriod) => {
+    if (!data || !data.history || data.history.length === 0) {
+      return {
+        total: 0,
+        deliveries: 0,
+        tips: 0,
+        bonuses: 0,
+        average: 0,
+        history: []
+      };
+    }
+
+    // Sort history by date (newest first)
+    const sortedHistory = [...data.history].sort((a, b) => 
+      new Date(b.date) - new Date(a.date)
+    );
+
+    const today = new Date();
+    let filteredHistory = [];
+    
+    // Filter history based on period
+    if (selectedPeriod === 'week') {
+      // Get start of current week (Sunday)
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      filteredHistory = sortedHistory.filter(entry => 
+        new Date(entry.date) >= startOfWeek
+      );
+    } else if (selectedPeriod === 'month') {
+      // Get start of current month
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      
+      // Group by week for month view
+      const weeklyData = groupByWeek(sortedHistory, startOfMonth);
+      return {
+        total: data.total,
+        deliveries: data.deliveries,
+        tips: data.tips,
+        bonuses: data.bonuses,
+        average: data.count > 0 ? data.total / data.count : 0,
+        history: weeklyData
+      };
+    } else if (selectedPeriod === 'year') {
+      // Get start of current year
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      
+      // Group by month for year view
+      const monthlyData = groupByMonth(sortedHistory, startOfYear);
+      return {
+        total: data.total,
+        deliveries: data.deliveries,
+        tips: data.tips,
+        bonuses: data.bonuses,
+        average: data.count > 0 ? data.total / data.count : 0,
+        history: monthlyData
+      };
+    }
+
+    // Calculate totals for the filtered period
+    const periodTotal = filteredHistory.reduce((sum, entry) => sum + entry.amount, 0);
+    const periodDeliveryCount = filteredHistory.reduce((sum, entry) => sum + entry.deliveries, 0);
+    
+    // For simplicity, estimate delivery pay and tips based on overall ratios
+    const deliveryPayRatio = data.total > 0 ? data.deliveries / data.total : 0.6;
+    const tipsRatio = data.total > 0 ? data.tips / data.total : 0.4;
+    
+    return {
+      total: periodTotal,
+      deliveries: periodTotal * deliveryPayRatio,
+      tips: periodTotal * tipsRatio,
+      bonuses: 0, // Assume no bonuses for simplicity
+      average: periodDeliveryCount > 0 ? periodTotal / periodDeliveryCount : 0,
+      history: filteredHistory
+    };
+  };
+
+  // Group earnings by week for month view
+  const groupByWeek = (history, startDate) => {
+    const weeks = [];
+    const weekMap = new Map();
+    
+    history.forEach(entry => {
+      const entryDate = new Date(entry.date);
+      if (entryDate >= startDate) {
+        // Calculate week number
+        const weekStart = new Date(entryDate);
+        weekStart.setDate(entryDate.getDate() - entryDate.getDay());
+        weekStart.setHours(0, 0, 0, 0);
+        
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6);
+        
+        const weekKey = weekStart.toISOString().split('T')[0];
+        
+        if (!weekMap.has(weekKey)) {
+          weekMap.set(weekKey, {
+            id: weeks.length + 1,
+            date: `${weekStart.toISOString().split('T')[0]} to ${weekEnd.toISOString().split('T')[0]}`,
+            amount: 0,
+            deliveries: 0,
+            status: 'Paid'
+          });
+        }
+        
+        const weekData = weekMap.get(weekKey);
+        weekData.amount += entry.amount;
+        weekData.deliveries += entry.deliveries;
+      }
+    });
+    
+    // Convert map to array and sort by date (newest first)
+    return Array.from(weekMap.values()).sort((a, b) => {
+      return new Date(b.date.split(' ')[0]) - new Date(a.date.split(' ')[0]);
+    });
+  };
+
+  // Group earnings by month for year view
+  const groupByMonth = (history, startDate) => {
+    const months = [];
+    const monthMap = new Map();
+    
+    history.forEach(entry => {
+      const entryDate = new Date(entry.date);
+      if (entryDate >= startDate) {
+        // Get month-year as key
+        const monthKey = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (!monthMap.has(monthKey)) {
+          monthMap.set(monthKey, {
+            id: months.length + 1,
+            date: monthKey,
+            amount: 0,
+            deliveries: 0,
+            status: 'Paid'
+          });
+        }
+        
+        const monthData = monthMap.get(monthKey);
+        monthData.amount += entry.amount;
+        monthData.deliveries += entry.deliveries;
+      }
+    });
+    
+    // Convert map to array and sort by date (newest first)
+    return Array.from(monthMap.values()).sort((a, b) => {
+      return new Date(b.date) - new Date(a.date);
+    });
+  };
 
   const handlePeriodChange = (newPeriod) => {
     setLoading(true);
@@ -78,7 +206,15 @@ const EarningsOverview = () => {
   };
 
   const formatDate = (dateString) => {
-    // For year period, only the month is provided
+    // Check if the date is a range (for weekly view)
+    if (dateString.includes(' to ')) {
+      const [start, end] = dateString.split(' to ');
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      return `${startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    }
+    
+    // For year period, only the month is provided (YYYY-MM format)
     if (dateString.length <= 7) {
       const [year, month] = dateString.split('-');
       const date = new Date(year, month - 1);
@@ -147,7 +283,7 @@ const EarningsOverview = () => {
               <h3 className="text-lg font-medium text-gray-700 mb-2">Tips</h3>
               <p className="text-3xl font-bold text-purple-600">{formatCurrency(earnings.tips)}</p>
               <div className="mt-4 text-sm text-gray-500">
-                {((earnings.tips / earnings.total) * 100).toFixed(1)}% of total earnings
+                {earnings.total > 0 ? ((earnings.tips / earnings.total) * 100).toFixed(1) : '0'}% of total earnings
               </div>
             </div>
           </div>
@@ -174,32 +310,36 @@ const EarningsOverview = () => {
               <div className="mt-6">
                 <div className="relative pt-1">
                   <div className="overflow-hidden h-4 flex rounded-full bg-gray-200">
-                    <div 
-                      style={{ width: `${(earnings.deliveries / earnings.total) * 100}%` }}
-                      className="bg-blue-500 h-full"
-                    ></div>
-                    <div 
-                      style={{ width: `${(earnings.tips / earnings.total) * 100}%` }}
-                      className="bg-purple-500 h-full"
-                    ></div>
-                    <div 
-                      style={{ width: `${(earnings.bonuses / earnings.total) * 100}%` }}
-                      className="bg-green-500 h-full"
-                    ></div>
+                    {earnings.total > 0 && (
+                      <>
+                        <div 
+                          style={{ width: `${(earnings.deliveries / earnings.total) * 100}%` }}
+                          className="bg-blue-500 h-full"
+                        ></div>
+                        <div 
+                          style={{ width: `${(earnings.tips / earnings.total) * 100}%` }}
+                          className="bg-purple-500 h-full"
+                        ></div>
+                        <div 
+                          style={{ width: `${(earnings.bonuses / earnings.total) * 100}%` }}
+                          className="bg-green-500 h-full"
+                        ></div>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="flex text-xs mt-2 justify-between">
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-blue-500 rounded-full mr-1"></div>
-                    <span>Delivery Pay ({((earnings.deliveries / earnings.total) * 100).toFixed(1)}%)</span>
+                    <span>Delivery Pay ({earnings.total > 0 ? ((earnings.deliveries / earnings.total) * 100).toFixed(1) : '0'}%)</span>
                   </div>
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-purple-500 rounded-full mr-1"></div>
-                    <span>Tips ({((earnings.tips / earnings.total) * 100).toFixed(1)}%)</span>
+                    <span>Tips ({earnings.total > 0 ? ((earnings.tips / earnings.total) * 100).toFixed(1) : '0'}%)</span>
                   </div>
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-green-500 rounded-full mr-1"></div>
-                    <span>Bonuses ({((earnings.bonuses / earnings.total) * 100).toFixed(1)}%)</span>
+                    <span>Bonuses ({earnings.total > 0 ? ((earnings.bonuses / earnings.total) * 100).toFixed(1) : '0'}%)</span>
                   </div>
                 </div>
               </div>
@@ -231,8 +371,8 @@ const EarningsOverview = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {earnings.history.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-gray-50">
+                  {earnings.history.map((payment, index) => (
+                    <tr key={payment.id || index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {formatDate(payment.date)}
                       </td>
