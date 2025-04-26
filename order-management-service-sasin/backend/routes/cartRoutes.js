@@ -4,7 +4,7 @@ const {
   addItemToCart,
   getCartItems,
   updateItemQuantity,
-  removeCartItem
+  removeItemFromCart
 } = require ('../controllers/cartController.js');
 
 // @route   POST /api/cart
@@ -19,8 +19,8 @@ router.get('/:userId', getCartItems);
 // @desc    Update quantity of a specific item
 router.put('/:userId', updateItemQuantity);
 
-// @route   DELETE /api/cart/:userId/:productId
+// @route   DELETE /api/cart/:userId/:restaurantId/:menuItemId
 // @desc    Remove an item from cart
-router.delete('/:userId/:productId', removeCartItem);
+router.delete('/:userId/:restaurantId/:menuItemId', removeItemFromCart);
 
 module.exports = router;

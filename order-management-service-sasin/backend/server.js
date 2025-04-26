@@ -10,7 +10,19 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:5173',
+    credentials: true
+  }));
+
+const session = require('express-session');
+app.use(session({
+  secret: process.env.SECRET_KEY,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: false } // true if using HTTPS
+}));
+  
 app.use(express.json());
 
 // Global DB holder
