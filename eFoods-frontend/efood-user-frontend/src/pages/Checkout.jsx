@@ -2,6 +2,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
 import API from '../utils/api';
+import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
   const { cart, fetchCart } = useCart();
@@ -12,6 +13,8 @@ const Checkout = () => {
   const [city, setCity] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
+
+  const navigate = useNavigate();
 
   const handleCheckout = async () => {
     if (!address || !city || !postalCode || !country) {
@@ -28,9 +31,18 @@ const Checkout = () => {
           country,
         },
       };
-      await API.post('/orders', orderData);
+      
+
+      const res = await API.post('/orders', orderData); // ✅ get response
+      const orderId = res.data._id; // ✅ get orderId
       alert('Order placed successfully!');
       fetchCart();
+
+      navigate('/placeorder', {
+       state: { orderId }, // ✅ pass it properly
+      });
+
+
     } catch (err) {
       console.error(err);
       alert('Checkout failed');
