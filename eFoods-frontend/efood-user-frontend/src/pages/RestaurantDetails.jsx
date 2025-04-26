@@ -48,7 +48,11 @@ export default function RestaurantDetails() {
             onClick={() => setSelected(item)}
             className="bg-white border rounded-lg shadow hover:shadow-lg transition cursor-pointer"
           >
-            <img src={item.image || 'https://via.placeholder.com/300'} className="w-full h-44 object-cover" />
+            <img 
+              src={item.image?.[0] ? `http://localhost:5000${item.image[0]}` : 'https://via.placeholder.com/300'} 
+              className="w-full h-44 object-cover" 
+              alt={item.name}
+            />
             <div className="p-4">
               <h3 className="font-semibold text-lg text-gray-800">{item.name}</h3>
               <p className="text-sm text-gray-500">{item.description}</p>
@@ -70,7 +74,13 @@ export default function RestaurantDetails() {
             >
               ✖
             </button>
-            <img src={selected.image || 'https://via.placeholder.com/400'} className="rounded mb-4" />
+
+            <img 
+              src={selected.image?.[0] ? `http://localhost:5000${selected.image[0]}` : 'https://via.placeholder.com/400'} 
+              className="rounded mb-4" 
+              alt={selected.name}
+            />
+            
             <h2 className="text-xl font-bold text-primaryGreen">{selected.name}</h2>
             <p className="text-sm mt-2 text-gray-600">{selected.description}</p>
             <div className="mt-3 text-sm text-gray-600">

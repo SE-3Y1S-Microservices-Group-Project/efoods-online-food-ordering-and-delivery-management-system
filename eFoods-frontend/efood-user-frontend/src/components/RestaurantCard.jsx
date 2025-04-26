@@ -11,10 +11,11 @@ export default function RestaurantCard({ restaurant }) {
         className="bg-white border rounded-xl shadow-md hover:shadow-xl cursor-pointer transition duration-300"
       >
         <img
-          src={restaurant.image?.[0] || 'https://via.placeholder.com/400'}
+          src={restaurant.image?.[0] ? `http://localhost:5000${restaurant.image[0]}` : 'https://via.placeholder.com/400'}
           alt={restaurant.name}
           className="w-full h-44 object-cover rounded-t-xl"
         />
+
         <div className="p-4">
           <h3 className="text-lg font-bold text-primaryGreen">{restaurant.name}</h3>
           <p className="text-sm text-gray-500 line-clamp-1">{restaurant.address}</p>
@@ -46,7 +47,10 @@ export default function RestaurantCard({ restaurant }) {
             >
               ✖
             </button>
-            <img src={restaurant.image?.[0] || 'https://via.placeholder.com/400'} className="rounded mb-4" />
+              <img
+                src={restaurant.image?.[0] ? `http://localhost:5000${restaurant.image[0]}` : 'https://via.placeholder.com/400'}
+                className="rounded mb-4"
+              />
             <h2 className="text-xl font-bold text-primaryGreen">{restaurant.name}</h2>
             <p className="text-sm text-gray-600 mt-1">{restaurant.description || 'No description provided.'}</p>
             <p className="text-sm text-gray-600 mt-2"><strong>Address:</strong> {restaurant.address}</p>
