@@ -1,49 +1,37 @@
-// src/contexts/RestaurantContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import axios from 'axios';
 import APIres from '../utils/apires';
 
-const RestaurantContext = createContext();
-
-export const useRestaurant = () => useContext(RestaurantContext);
+export const RestaurantContext = createContext();
 
 export const RestaurantProvider = ({ children }) => {
-  const [restaurant, setRestaurant] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('restaurantToken') || '');
-
-  useEffect(() => {
-    if (token && !restaurant) {
-        APIres.get('/api/restaurant/me', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then(res => setRestaurant(res.data))
-      .catch(() => {
-        logout();
-      });
-    }
-  }, [token]);
+  const [restaurant, setRestaurant] = useState(() => {
+    // Load user from localStorage if available
+    const storedRestaurant = localStorage.getItem('restaurant');
+    return storedRestaurant ? JSON.parse(storedRestaurant) : null;
+  });
 
   const login = async (email, password) => {
-    try {
-      const res = await APIres.post('/api/restaurant/login', { email, password });
-      setRestaurant(res.data.restaurant);
-      setToken(res.data.token);
-      localStorage.setItem('restaurantToken', res.data.token);
-      return { success: true };
-    } catch (err) {
-      return { success: false, error: err.response?.data?.error || 'Login failed' };
-    }
+    const res = await APIres.post('/api/restaurants/login', { email, password });
+    setRestaurant(res.data);
+    localStorage.setItem('restaurant', JSON.stringify(res.data));
+  };
+
+  const register = async (userData) => {
+    const res = await APIres.post('/api/restaurants/register', userData);
+    setRestaurant(res.data);
+    localStorage.setItem('restaurant', JSON.stringify(res.data));
   };
 
   const logout = () => {
     setRestaurant(null);
-    setToken('');
-    localStorage.removeItem('restaurantToken');
+    localStorage.removeItem('restaurant'); // Clear restaurant from localStorage
   };
 
   return (
-    <RestaurantContext.Provider value={{ restaurant, token, login, logout }}>
+    <RestaurantContext.Provider value={{ restaurant, login, register, logout }}>
       {children}
     </RestaurantContext.Provider>
   );
 };
+
+export const useRestaurant = () => useContext(RestaurantContext);

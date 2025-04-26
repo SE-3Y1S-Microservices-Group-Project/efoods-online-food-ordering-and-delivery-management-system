@@ -1,10 +1,9 @@
-import { useContext } from 'react';
+import { useRestaurant } from '../../context/RestaurantContext';
 import { Navigate } from 'react-router-dom';
-import { RestaurantContext } from '../../context/RestaurantContext';
 
 const ProtectedRestaurant = ({ children }) => {
-  const { user } = useContext(RestaurantContext);
-  return user ? children : <Navigate to="/restaurant-signin" />;
+  const { restaurant } = useRestaurant();
+  return restaurant ? children : <Navigate to="/restaurant-signin" />;
 };
 
 export default ProtectedRestaurant;

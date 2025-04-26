@@ -65,51 +65,6 @@ const router = createBrowserRouter([
       },
     ],
   },
-
-  {
-    path: '/rts',
-    element: <AppUser />,
-    children: [
-      { path: 'signin', element: <SignIn /> },
-      { path: 'signup', element: <SignUp /> },
-      {
-        path: 'restaurants',
-        element: (
-          <ProtectedRoute>
-            <UserNavBar />
-              <Restaurants />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'restaurants/:id',
-        element: (
-          <ProtectedRoute>
-            <UserNavBar />
-              <RestaurantDetails />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'cart',
-        element: (
-          <ProtectedRoute>
-            <UserNavBar />
-              <Cart />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'checkout',
-        element: (
-          <ProtectedRoute>
-            <UserNavBar />
-              <Checkout />
-          </ProtectedRoute>
-        ),
-      },
-    ],
-  },
 ]);
 
 export default router;
