@@ -214,6 +214,7 @@ export default function Menu() {
               <p className="mt-1 text-gray-500">Try changing your search or filter criteria</p>
             </div>
           ) : (
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredItems.map(item => (
                 <div
@@ -224,7 +225,7 @@ export default function Menu() {
                   <div className="relative">
                     {item.image?.[0] ? (
                       <img
-                        src={`http://localhost:5000/${item.image[0]}`}
+                        src={`http://localhost:5000${item.image[0]}`}  
                         alt={item.name}
                         className="w-full h-52 object-cover transition duration-300 group-hover:scale-105"
                       />
@@ -335,7 +336,7 @@ export default function Menu() {
               <div className="flex flex-col md:flex-row gap-6">
                 {selectedItem.image?.[0] ? (
                   <img
-                    src={`http://localhost:5000/${selectedItem.image[0]}`}
+                    src={`http://localhost:5000${selectedItem.image[0]}`}
                     alt={selectedItem.name}
                     className="w-full md:w-1/3 h-64 object-cover rounded-lg"
                   />
