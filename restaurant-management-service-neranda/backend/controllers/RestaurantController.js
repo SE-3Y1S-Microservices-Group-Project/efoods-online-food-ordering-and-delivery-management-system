@@ -72,12 +72,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Toggle Availability
-// exports.toggleAvailability = async (req, res) => {
-//   const { isAvailable } = req.body;
-//   const updated = await Restaurant.findByIdAndUpdate(req.params.id, { isAvailable }, { new: true });
-//   res.json(updated);
-// };
 
 exports.toggleAvailability = async (req, res) => {
   const { restaurantDB } = req.app.locals.dbs;
@@ -147,7 +141,12 @@ exports.update = async (req, res) => {
       description,
       deliveryFee,
       address,
+      country,
+      state,
+      city,
       status,
+      openingTime,
+      closingTime
     } = req.body;
 
     if (name) restaurant.name = name;
@@ -156,7 +155,14 @@ exports.update = async (req, res) => {
     if (description) restaurant.description = description;
     if (deliveryFee) restaurant.deliveryFee = deliveryFee;
     if (address) restaurant.address = address;
+    if (country) restaurant.country = country;
+    if (state) restaurant.state = state;
+    if (city) restaurant.city = city;
     if (status) restaurant.status = status;
+    if (openingTime) restaurant.openingTime = openingTime;
+    if (closingTime) restaurant.closingTime = closingTime;
+    
+    // Update password if provided
     if (password) {
       const bcrypt = require('bcryptjs');
       const hashed = await bcrypt.hash(password, 10);
@@ -165,7 +171,7 @@ exports.update = async (req, res) => {
 
     // Update image if uploaded
     if (req.files && req.files.length > 0) {
-      const imagePaths = req.files.map(file => `/uploads/${file.filename}`);
+      const imagePaths = req.files.map(file => `/uploads/restaurants/${file.filename}`);
       restaurant.image = imagePaths;
     }
 
