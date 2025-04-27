@@ -88,7 +88,7 @@ exports.createCheckoutSession = async (req, res) => {
       line_items: [
         {
           price_data: {
-            currency: 'lkr',
+            currency: 'usd',
             product_data: {
               name: 'E-Foods Order',
             },
@@ -122,7 +122,7 @@ exports.handleWebhook = async (req, res) => {
 
   try {
     event = stripe.webhooks.constructEvent(
-      req.rawBody,
+      req.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );

@@ -6,6 +6,9 @@ const paymentRoutes = require("./routes/payment");
 
 dotenv.config();
 
+// ADD THIS BEFORE express.json()
+const bodyParser = require('body-parser');
+
 const app = express();
 
 app.use(cors({
@@ -19,6 +22,10 @@ let dbConnections = {};
 connectDB().then((connections) => {
   dbConnections = connections;
   app.locals.dbs = dbConnections;
+  
+// For Stripe Webhook ONLY - raw body
+app.use('/api/payment/webhook', bodyParser.raw({ type: 'application/json' }));
+
 
   // Routes
   app.use("/api/payment", paymentRoutes);

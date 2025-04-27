@@ -33,7 +33,7 @@ const RevenueTable = () => {
           <thead className="bg-sky-100 text-sky-700">
             <tr>
               <th className="px-4 py-2 border-b">Date</th>
-              <th className="px-4 py-2 border-b">Revenue (LKR)</th>
+              <th className="px-4 py-2 border-b">Revenue (USD)</th>
             </tr>
           </thead>
           <tbody>

@@ -62,13 +62,13 @@ export default function Profile() {
                     <div>
                       {item.name} × {item.quantity}
                     </div>
-                    <div>LKR {(item.price * item.quantity).toFixed(2)}</div>
+                    <div>USD {(item.price * item.quantity).toFixed(2)}</div>
                   </li>
                 ))}
               </ul>
 
               <div className="mt-3 text-right font-semibold text-sky-700">
-                Total: LKR {order.total.toFixed(2)}
+                Total: USD {order.total.toFixed(2)}
               </div>
             </div>
           ))}

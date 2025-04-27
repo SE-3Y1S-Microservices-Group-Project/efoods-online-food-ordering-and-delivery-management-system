@@ -57,7 +57,7 @@ const Cart = () => {
                       {item.menuItem?.name}
                     </h3>
                     <p className="text-[#27391C] mt-1">
-                      LKR {item.menuItem?.price?.toFixed(2)} per item
+                      USD {item.menuItem?.price?.toFixed(2)} per item
                     </p>
                   </div>
 
@@ -77,7 +77,7 @@ const Cart = () => {
                 <div className="flex justify-between items-center mb-6">
                   <span className="text-xl font-semibold text-[#18230F]">Total:</span>
                   <span className="text-2xl font-bold text-[#1F7D53]">
-                    LKR {calculateTotal().toFixed(2)}
+                    USD  {calculateTotal().toFixed(2)}
                   </span>
                 </div>
 
