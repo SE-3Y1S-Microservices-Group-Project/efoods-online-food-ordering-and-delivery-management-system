@@ -49,10 +49,9 @@ export default function Footer() {
             <h4 className="font-bold text-lg mb-6 text-[#1F7D53]">Quick Links</h4>
             <ul className="space-y-3">
               <li><Link to="/" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Home</Link></li>
-              <li><Link to="/menu" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Menu</Link></li>
               <li><Link to="/restaurants" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Restaurants</Link></li>
-              <li><Link to="/about" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">About Us</Link></li>
-              <li><Link to="/contact" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Contact</Link></li>
+              <li><Link to="/aboutus" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">About Us</Link></li>
+              <li><Link to="/contactus" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Contact</Link></li>
             </ul>
           </div>
           
@@ -63,7 +62,7 @@ export default function Footer() {
               <li><Link to="/faq" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">FAQs</Link></li>
               <li><Link to="/terms" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Terms & Conditions</Link></li>
               <li><Link to="/privacy" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Privacy Policy</Link></li>
-              <li><Link to="/support" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Help Center</Link></li>
+              <li><Link to="/help" className="text-gray-300 hover:text-[#1F7D53] transition-colors duration-300">Help Center</Link></li>
             </ul>
           </div>
           
