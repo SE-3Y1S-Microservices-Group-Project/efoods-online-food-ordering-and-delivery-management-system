@@ -150,7 +150,7 @@ export default function RegisterRestaurant() {
           </select>
         </div>
 
-        <Input icon={<Coins />} name="deliveryFee" placeholder="Delivery Fee (LKR)" type="number" onChange={handleChange} />
+        <Input icon={<Coins />} name="deliveryFee" placeholder="Delivery Fee (USD)" type="number" onChange={handleChange} />
 
         <div className="col-span-2 flex items-center border rounded px-3 py-2">
           <ImagePlus className="text-gray-400 mr-2" />

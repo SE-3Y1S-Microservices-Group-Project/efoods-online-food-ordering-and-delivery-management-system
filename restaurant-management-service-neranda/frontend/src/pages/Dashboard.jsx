@@ -55,7 +55,7 @@ export default function Dashboard() {
     labels: revenueByDay.map(day => day.date),
     datasets: [
       {
-        label: 'Revenue (LKR)',
+        label: 'Revenue (USD)',
         data: revenueByDay.map(day => day.amount),
         backgroundColor: 'rgba(14, 165, 233, 0.6)',
         borderRadius: 8
@@ -95,7 +95,7 @@ export default function Dashboard() {
           <StatCard title="📋 Menu Items" value={stats.menuCount} color="text-indigo-600" />
           <StatCard title="🛒 Today’s Orders" value={stats.todayOrders} color="text-sky-600" />
           <StatCard title="👥 Customers" value={stats.customerCount} color="text-purple-600" />
-          <StatCard title="💰 Total Revenue" value={`LKR ${stats.totalRevenue}`} color="text-green-600" />
+          <StatCard title="💰 Total Revenue" value={`USD ${stats.totalRevenue}`} color="text-green-600" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
