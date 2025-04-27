@@ -11,12 +11,22 @@ export default function Restaurants() {
   }, []);
 
   return (
-    <div className="bg-gradient-to-br from-green-200 to-green-50 min-h-screen py-10 px-10 max-w-8xl mx-auto">
-      <h2 className="text-3xl font-bold mb-6 text-primaryGreen">Explore Restaurants 🍽️</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {restaurants.map(r => (
-          <RestaurantCard key={r._id} restaurant={r} />
-        ))}
+    <div className="min-h-screen bg-gradient-to-b from-green-100 to-green-300 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
+            Explore Restaurants
+          </h1>
+          <p className="mt-5 max-w-xl mx-auto text-xl text-gray-500">
+            Discover delicious dining options near you
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {restaurants.map(r => (
+            <RestaurantCard key={r._id} restaurant={r} />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -11,9 +11,11 @@ export const RestaurantProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const res = await APIres.post('/api/restaurants/login', { email, password });
+    const {token, restaurant} = res.data;
     setRestaurant(res.data);
     localStorage.setItem('restaurant', JSON.stringify(res.data));
-    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('token', token);
+    localStorage.setItem('restaurantId', restaurant._id);
     return res.data;
   };
 

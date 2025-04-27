@@ -39,11 +39,11 @@ export default function SideBar() {
                 </li>
             </a>
 
-            <a href="/restaurant-order">
+            {/* <a href="/restaurant-order">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">
                 <FaBars className="mr-2" /> Order Management
                 </li>
-            </a>
+            </a> */}
 
             <a href="/restaurant-settings">
                 <li className="p-3 hover:bg-sky-100 flex items-center cursor-pointer">

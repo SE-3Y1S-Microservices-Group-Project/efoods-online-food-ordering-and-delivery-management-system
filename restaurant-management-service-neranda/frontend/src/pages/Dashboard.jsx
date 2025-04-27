@@ -41,13 +41,15 @@ export default function Dashboard() {
 
   const fetchStats = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/dashboard/stats');
+      const restaurantId = localStorage.getItem('restaurantId');
+      const res = await axios.get(`http://localhost:5000/api/dashboard/stats?restaurantId=${restaurantId}`);
       setStats(res.data.stats);
       setRevenueByDay(res.data.revenueByDay);
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
     }
   };
+  
 
   const barChartData = {
     labels: revenueByDay.map(day => day.date),
