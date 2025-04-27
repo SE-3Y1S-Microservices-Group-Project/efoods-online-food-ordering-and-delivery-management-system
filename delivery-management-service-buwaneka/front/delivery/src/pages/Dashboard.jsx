@@ -177,7 +177,7 @@ const Dashboard = () => {
     return new Intl.NumberFormat('en-LK', {
       style: 'currency',
       currency: 'LKR'
-    }).format(amount);
+    }).format(amount);  
   };
   
   // Format date function
@@ -358,13 +358,13 @@ const Dashboard = () => {
             <span className="material-icons mr-3 text-gray-600">Earnings</span>
             
           </button>
-          <button 
+          {/* <button 
             onClick={() => setActiveTab('map')}
             className={`w-full text-left px-4 py-2 flex items-center ${activeTab === 'map' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
           >
             <span className="material-icons mr-3 text-gray-600">Live Map</span>
             
-          </button>
+          </button> */}
           <button 
             onClick={() => setActiveTab('notifications')}
             className={`w-full text-left px-4 py-2 flex items-center ${activeTab === 'notifications' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
