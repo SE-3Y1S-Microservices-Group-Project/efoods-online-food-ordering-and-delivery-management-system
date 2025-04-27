@@ -4,21 +4,21 @@ import {
   X, Store, Mail, MapPin, Lock, Phone,
   FileText, ImagePlus, Coins,
   Timer,
-  Clock
+  Clock,
+  AlertCircle
 } from 'lucide-react'
 
 import { Country, State, City } from 'country-state-city'
 import { useNavigate } from 'react-router-dom';
 
-
 export default function RestaurantEditForm({ onClose, onSuccess }) {
-
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    confirmPassword: '',
     contact: '',
     description: '',
     deliveryFee: '',
@@ -30,6 +30,7 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
   const [images, setImages] = useState([])
   const [imageUrls, setImageUrls] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   const [selectedCountry, setSelectedCountry] = useState('')
   const [selectedState, setSelectedState] = useState('')
@@ -61,6 +62,7 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
           name: restaurant.name || '',
           email: restaurant.email || '',
           password: '', // Don't populate password
+          confirmPassword: '', // Don't populate confirm password
           contact: restaurant.contact || '',
           description: restaurant.description || '',
           deliveryFee: restaurant.deliveryFee || '',
@@ -114,19 +116,43 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    // Clear error when changing password fields
+    if (e.target.name === 'password' || e.target.name === 'confirmPassword') {
+      setError('')
+    }
   }
 
   const handleFileChange = (e) => {
     setImages([...e.target.files])
   }
 
+  const validateForm = () => {
+    // Check if password and confirm password match if either is provided
+    if (formData.password || formData.confirmPassword) {
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match')
+        return false
+      }
+    }
+    return true
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate passwords match
+    if (!validateForm()) {
+      return
+    }
+    
     try {
       const data = new FormData()
       
       // Only append non-empty fields to avoid overwriting with empty values
       for (let key in formData) {
+        // Skip the confirmPassword field as it's only for front-end validation
+        if (key === 'confirmPassword') continue
+        
         if (formData[key] !== '') {
           data.append(key, formData[key])
         }
@@ -164,6 +190,7 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
       })
 
       alert('Restaurant updated successfully!')
+      navigate('/restaurant-my')
       if (onSuccess) onSuccess()
       if (onClose) onClose()
     } catch (err) {
@@ -184,23 +211,27 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl rounded-lg shadow-lg p-6 relative animate-fadeIn">
-        <button onClick={() => navigate('/restaurant')} className="absolute top-4 right-4 text-gray-500 hover:text-red-600">
+      <div className="bg-white w-full max-w-2xl rounded-lg shadow-lg p-6 relative animate-fadeIn max-h-[90vh] overflow-y-auto">
+        <button onClick={() => navigate('/restaurant-my')} className="absolute top-4 right-4 text-gray-500 hover:text-red-600 z-10">
           <X />
         </button>
 
-        <h2 className="text-2xl font-bold text-sky-700 mb-4 flex items-center">
+        <h2 className="text-2xl font-bold text-sky-700 mb-4 flex items-center sticky top-0 bg-white py-2">
           <Store className="mr-2" /> Edit Restaurant Profile
         </h2>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-          <InputWithIcon 
+          {/* Restaurant Details */}
+        <InputWithIcon 
             icon={<Store />} 
             name="name" 
+            className="w-full p-2"
             placeholder="Restaurant Name" 
             value={formData.name}
             onChange={handleChange} 
           />
+
+          <br />
           
           <InputWithIcon 
             icon={<Mail />} 
@@ -218,15 +249,40 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
             onChange={handleChange} 
           />
           
-          <InputWithIcon 
-            icon={<Lock />} 
-            name="password" 
-            type="password" 
-            placeholder="New Password (leave empty to keep current)" 
-            value={formData.password}
-            onChange={handleChange} 
-            required={false}
-          />
+          {/* Password Fields */}
+          <div className="col-span-1">
+            <label className="block mb-1 font-medium text-gray-700">New Password</label>
+            <InputWithIcon 
+              icon={<Lock />} 
+              name="password" 
+              type="password" 
+              placeholder="New Password (leave empty to keep current)" 
+              value={formData.password}
+              onChange={handleChange} 
+              required={false}
+            />
+          </div>
+          
+          <div className="col-span-1">
+            <label className="block mb-1 font-medium text-gray-700">Confirm Password</label>
+            <InputWithIcon 
+              icon={<Lock />} 
+              name="confirmPassword" 
+              type="password" 
+              placeholder="Confirm New Password" 
+              value={formData.confirmPassword}
+              onChange={handleChange} 
+              required={false}
+            />
+          </div>
+
+          {/* Error message for password mismatch */}
+          {error && (
+            <div className="col-span-2 flex items-center text-red-500 text-sm">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {error}
+            </div>
+          )}
 
           <div className="col-span-1">
             <label className="block mb-1 font-medium text-gray-700">Opening Time</label>
@@ -343,33 +399,39 @@ export default function RestaurantEditForm({ onClose, onSuccess }) {
             </div>
           )}
 
-          <div className="flex items-center border rounded px-2 col-span-2">
-            <ImagePlus className="text-gray-400 mr-2" />
-            <input 
-              type="file" 
-              name="images" 
-              onChange={handleFileChange} 
-              multiple 
-              className="w-full p-2 outline-none" 
-            />
+          <div className="col-span-2">
+            <label className="block mb-1 font-medium text-gray-700">Upload New Images</label>
+            <div className="flex items-center border rounded px-2">
+              <ImagePlus className="text-gray-400 mr-2" />
+              <input 
+                type="file" 
+                name="images" 
+                onChange={handleFileChange} 
+                multiple 
+                className="w-full p-2 outline-none" 
+              />
+            </div>
           </div>
 
-          <div className="flex items-start border rounded px-2 col-span-2">
-            <FileText className="text-gray-400 mt-2 mr-2" />
-            <textarea 
-              name="description" 
-              placeholder="Description" 
-              value={formData.description}
-              onChange={handleChange} 
-              className="w-full p-2 outline-none" 
-              rows={3}
-            ></textarea>
+          <div className="col-span-2">
+            <label className="block mb-1 font-medium text-gray-700">Restaurant Description</label>
+            <div className="flex items-start border rounded px-2">
+              <FileText className="text-gray-400 mt-2 mr-2" />
+              <textarea 
+                name="description" 
+                placeholder="Description" 
+                value={formData.description}
+                onChange={handleChange} 
+                className="w-full p-2 outline-none" 
+                rows={4}
+              ></textarea>
+            </div>
           </div>
 
-          <div className="col-span-2 flex justify-end space-x-2">
+          <div className="col-span-2 flex justify-end space-x-2 sticky bottom-0 bg-white py-3">
             <button
               type="button"
-              onClick={() => navigate('/restaurant')}            
+              onClick={() => navigate('/restaurant-my')}            
               className="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
               Cancel

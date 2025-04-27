@@ -64,7 +64,7 @@ export default function Restaurant() {
   };
 
   const handleEdit = () => {
-    navigate(`/restaurant/edit/${restaurant._id}`);
+    navigate(`/restaurant-edit/${restaurant._id}`);
   };
 
   // Loading state
@@ -201,26 +201,10 @@ export default function Restaurant() {
 
               <DetailSection title="Details">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <DetailCard 
-                    icon={<Mail />} 
-                    label="Email" 
-                    value={restaurant.email} 
-                  />
-                  <DetailCard 
-                    icon={<Phone />} 
-                    label="Contact" 
-                    value={restaurant.contact} 
-                  />
-                  <DetailCard 
-                    icon={<Coins />} 
-                    label="Delivery Fee" 
-                    value={`LKR ${restaurant.deliveryFee}`} 
-                  />
-                  <DetailCard 
-                    icon={<Store />} 
-                    label="Status" 
-                    value={restaurant.status} 
-                  />
+                  <DetailCard icon={<Mail />} label="Email" value={restaurant.email} className="hover:bg-gray-100 hover:text-gray-900 hover:shadow transition duration-200 ease-in-out"/>
+                  <DetailCard icon={<Phone />} label="Contact" value={restaurant.contact} className="hover:bg-gray-100 hover:text-gray-900 hover:shadow transition duration-200 ease-in-out"/>
+                  <DetailCard icon={<Coins />} label="Delivery Fee" value={`LKR ${restaurant.deliveryFee}`} className="hover:bg-gray-100 hover:text-gray-900 hover:shadow transition duration-200 ease-in-out"/>
+                  <DetailCard icon={<Store />} label="Status" value={restaurant.status} className="hover:bg-gray-100 hover:text-gray-900 hover:shadow transition duration-200 ease-in-out"/>
                 </div>
               </DetailSection>
             </div>

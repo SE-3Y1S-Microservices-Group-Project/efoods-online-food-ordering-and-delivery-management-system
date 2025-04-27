@@ -30,4 +30,8 @@ router.put('/:id', upload.single('image'), controller.update);
 
 router.delete('/:id', controller.remove);
 
+
+
+
+
 module.exports = router;

@@ -20,15 +20,17 @@ export default function MenuForm({ onClose, onSuccess }) {
     isAvailable: true,
     sizes: [],
     addOns: [],
-    finalPrice: ''
+    finalPrice: '',
+    restaurantId: ''
   });
 
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
 
   useEffect(() => {
-    const id = localStorage.getItem('restaurantId');
-    setRestaurantId(id);
+    const restaurantId = localStorage.getItem('restaurantId');
+    // alert(restaurantId);
+    setRestaurantId(restaurantId);
   }, []);
 
   useEffect(() => {
@@ -73,20 +75,27 @@ export default function MenuForm({ onClose, onSuccess }) {
     e.preventDefault();
     try {
       const data = new FormData();
+  
+      // IMPORTANT: only append fields except restaurantId manually
       Object.keys(formData).forEach(key => {
-        if (Array.isArray(formData[key])) {
-          data.append(key, JSON.stringify(formData[key]));
-        } else {
-          data.append(key, formData[key]);
+        if (key !== 'restaurantId') { // <- Skip restaurantId here
+          if (Array.isArray(formData[key])) {
+            data.append(key, JSON.stringify(formData[key]));
+          } else {
+            data.append(key, formData[key]);
+          }
         }
       });
+  
+      // THEN append restaurantId separately only once
       data.append('restaurantId', restaurantId);
+  
       if (image) data.append('image', image);
-
+  
       await axios.post('http://localhost:5000/api/menu/', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-
+  
       alert('Menu item created!');
       onSuccess();
       onClose();
@@ -95,6 +104,7 @@ export default function MenuForm({ onClose, onSuccess }) {
       alert(err.response?.data?.error || 'Error submitting menu item');
     }
   };
+  
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-auto">

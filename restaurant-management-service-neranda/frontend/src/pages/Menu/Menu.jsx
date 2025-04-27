@@ -3,7 +3,7 @@ import Sidebar from '../../components/SideBar';
 import axios from 'axios';
 import MenuForm from './MenuForm';
 import MenuEditForm from './MenuEditForm';
-import { FilePlus, FileText, Download, Pencil, Trash2, Search, X, ChevronRight } from 'lucide-react';
+import { FilePlus, Download, Pencil, Trash2, Search, X, ChevronRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -23,15 +23,34 @@ export default function Menu() {
     fetchMenuItems();
   }, []);
 
-  const fetchMenuItems = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/api/menu');
-      setMenuItems(res.data);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching menu items:', err);
-    }
-  };
+  // const fetchMenuItems = async () => {
+  //   try {
+  //     const res = await axios.get('http://localhost:5000/api/menu');
+  //     setMenuItems(res.data);
+  //     setLoading(false);
+  //   } catch (err) {
+  //     console.error('Error fetching menu items:', err);
+  //   }
+  // };
+
+  // In your Menu.js React component
+const fetchMenuItems = async () => {
+  try {
+    // Get restaurantId from localStorage or your auth state
+    const restaurantId = localStorage.getItem('restaurantId');
+    // alert(localStorage.getItem('restaurantName')); 
+    
+    const res = await axios.get(`http://localhost:5000/api/menu?restaurantId=${restaurantId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    setMenuItems(res.data);
+    setLoading(false);
+  } catch (err) {
+    console.error('Error fetching menu items:', err);
+  }
+};
 
   const handleDelete = async (item, e) => {
     e.stopPropagation();
@@ -115,6 +134,7 @@ export default function Menu() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-sky-700">Menu Items</h1>
+            <h1>{menuItems.name}</h1>
             <p className="text-gray-500 mt-1">Manage your restaurant menu items</p>
           </div>
           <button

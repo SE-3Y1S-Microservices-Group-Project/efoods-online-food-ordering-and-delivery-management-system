@@ -20,6 +20,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import PlaceOrder from './pages/PlaceOrder';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PaymentFailed from './pages/PaymentFailed';
+import UserProfile from './pages/UserProfile';
+import HelpCenter from './pages/HelpCenter';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import FAQs from './pages/FAQs';
 
 const stripePromise = loadStripe('pk_test_51RGxa9QwYkP7b05Rhk7zOc5FqNp2go8wELiqw6sFbpK874upT4hV3crf94pDEYHSi6YHdaGXuKJH0JXR3fjB8pxI00fTmS611t');
 
@@ -38,6 +43,10 @@ const router = createBrowserRouter([
       { path: 'contactus', element: <ContactUs /> },
       { path: 'signin', element: <SignIn /> },
       { path: 'signup', element: <SignUp /> },
+      { path: 'help', element: <HelpCenter /> },
+      { path: 'privacy', element: <PrivacyPolicy /> },
+      { path: 'terms', element: <TermsAndConditions /> },
+      { path: 'faq', element: <FAQs /> },
       {
         path: 'restaurants',
         element: (
@@ -74,6 +83,16 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <Checkout />
+            <Footer />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile-my',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <UserProfile />
             <Footer />
           </ProtectedRoute>
         ),

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DeliveryMap from './DeliveryMap'; 
 
 const ActiveDeliveries = () => {
   const [orders, setOrders] = useState([]);
@@ -9,6 +10,30 @@ const ActiveDeliveries = () => {
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [claimedOrderIds, setClaimedOrderIds] = useState([]);
   const [deliveredOrderIds, setDeliveredOrderIds] = useState([]);
+
+  //remove if crashes
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
+  const [driverLocation, setDriverLocation] = useState({ lat: 37.7749, lng: -122.4194 });
+
+// remove if crashes
+useEffect(() => {
+  if (navigator.geolocation) {
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setDriverLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+      },
+      { enableHighAccuracy: true }
+    );
+    
+    return () => navigator.geolocation.clearWatch(watchId);
+  }
+}, []);
 
   // Load claimed and delivered orders from localStorage on component mount
   useEffect(() => {
@@ -28,6 +53,8 @@ const ActiveDeliveries = () => {
     }
   }, []);
 
+
+  
   // Fetch orders from the connected database
   useEffect(() => {
     const fetchOrders = async () => {
@@ -147,6 +174,9 @@ const ActiveDeliveries = () => {
 
     fetchOrders();
     
+
+
+
     // Set up interval to refresh orders every 30 seconds
     const interval = setInterval(fetchOrders, 30000);
     
@@ -357,8 +387,12 @@ const ActiveDeliveries = () => {
     }
   };
 
+  // const handleViewDetails = (delivery) => {
+  //   setSelectedDelivery(delivery);
+  // };
   const handleViewDetails = (delivery) => {
     setSelectedDelivery(delivery);
+    setSelectedDeliveryId(delivery._id); // Update this to also set selected delivery ID (remove if crashes) an uncomment above 3 lines
   };
 
   const getStatusText = (status) => {
@@ -430,6 +464,9 @@ const ActiveDeliveries = () => {
             <div className="mb-4">
               <p className="text-sm text-gray-600">Restaurant:</p>
               <p className="font-medium">{selectedDelivery.restaurantName}</p>
+              {/* {selectedDelivery.pickupAddress && (
+                <p className="text-gray-600">{selectedDelivery.pickupAddress}</p>
+              )} */}
             </div>
             
             <div className="mb-4">
@@ -463,12 +500,12 @@ const ActiveDeliveries = () => {
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Order Total:</p>
-              <p className="font-medium">${typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
+              <p className="font-medium">LKR {typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
             </div>
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Your Earnings:</p>
-              <p className="font-medium text-green-600">${selectedDelivery.estimatedEarnings}</p>
+              <p className="font-medium text-green-600">LKR {selectedDelivery.estimatedEarnings}</p>
             </div>
             
             <div className="mt-6">
@@ -507,12 +544,12 @@ const ActiveDeliveries = () => {
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Order Total:</p>
-                  <p className="font-medium">${typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
+                  <p className="font-medium">LKR {typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
                 </div>
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Estimated Earnings:</p>
-                  <p className="font-medium text-green-600">${order.estimatedEarnings}</p>
+                  <p className="font-medium text-green-600">LKR {order.estimatedEarnings}</p>
                 </div>
                 
                 <div className="mt-6">
@@ -532,6 +569,34 @@ const ActiveDeliveries = () => {
           No new orders available at the moment.
         </div>
       )}
+      
+     
+      {/* {activeDeliveries.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
+          <div className="bg-white rounded-lg shadow h-96">
+            <DeliveryMap 
+              activeDeliveries={activeDeliveries}
+              selectedDeliveryId={selectedDeliveryId}
+              setSelectedDeliveryId={setSelectedDeliveryId}
+              driverLocation={driverLocation}
+            />
+          </div>
+        </div>
+      )} */}
+      {activeDeliveries && activeDeliveries.length > 0 && (
+  <div className="mb-8">
+    <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
+    <div className="bg-white rounded-lg shadow h-96">
+      <DeliveryMap 
+        activeDeliveries={activeDeliveries}
+        selectedDeliveryId={selectedDeliveryId}
+        setSelectedDeliveryId={setSelectedDeliveryId}
+        driverLocation={driverLocation}
+      />
+    </div>
+  </div>
+)}
       
       {/* Active Deliveries Section */}
       <h3 className="text-xl font-bold mb-4">Active Deliveries</h3>
@@ -566,7 +631,7 @@ const ActiveDeliveries = () => {
               
               <div className="mt-4">
                 <p className="text-sm text-gray-600">Earnings:</p>
-                <p className="font-medium text-green-600">${delivery.estimatedEarnings}</p>
+                <p className="font-medium text-green-600">LKR {delivery.estimatedEarnings}</p>
               </div>
               
               <div className="mt-8 border-t pt-4">
@@ -620,3 +685,4 @@ const ActiveDeliveries = () => {
 };
 
 export default ActiveDeliveries;
+
