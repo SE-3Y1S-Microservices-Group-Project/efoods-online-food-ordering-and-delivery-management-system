@@ -17,7 +17,7 @@ const UserNavBar = () => {
   };
 
   const goToProfile = () => {
-    navigate('/userProfile');
+    navigate('/profile-my');
   };
 
   const goToCart = () => {
