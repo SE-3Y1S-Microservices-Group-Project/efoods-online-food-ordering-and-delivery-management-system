@@ -23,8 +23,15 @@ const upload = multer({ storage });
 // ✅ Routes (use `upload` AFTER it's defined)
 router.get('/', controller.getAll);
 router.get('/:id', controller.getOne);
-router.post('/', upload.array('image', 5), controller.create);
-router.put('/:id', upload.array('image', 5), controller.update);
+// router.post('/', upload.array('image', 5), controller.create);
+// router.put('/:id', upload.array('image', 5), controller.update);
+router.post('/', upload.single('image'), controller.create);
+router.put('/:id', upload.single('image'), controller.update);
+
 router.delete('/:id', controller.remove);
+
+
+
+
 
 module.exports = router;

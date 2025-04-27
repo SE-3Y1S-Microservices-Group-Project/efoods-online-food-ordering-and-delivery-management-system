@@ -73,56 +73,63 @@ exports.getCartItems = async (req, res) => {
     }
 };
 
-//update quantity for specific items
+// Update quantity of an item in cart
 exports.updateItemQuantity = async (req, res) => {
     const { orderDB } = req.app.locals.dbs;
     const Cart = require('../models/Cart')(orderDB);
 
+    const { userId } = req.params;
     const { restaurantId, menuItemId, quantity } = req.body;
 
     try {
-        const cart = await Cart.findOne({ userId: req.params.userId });
+        const cart = await Cart.findOne({ userId });
 
-        const item = cart.items.find(
+        if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+        const itemIndex = cart.items.findIndex(
             (item) =>
                 item.menuItemId.toString() === menuItemId &&
                 item.restaurantId.toString() === restaurantId
         );
 
-        if (item) {
-            item.quantity = quantity;
-            await cart.save();
-            res.json(cart);
-        } else {
-            res.status(404).json({ message: 'Item not found in cart' });
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: 'Item not found in cart' });
         }
-    } catch (err) {
-        res.status(404).json({ message: 'Item not found in cart' });
-    }
-};
 
-//remove item from cart
-exports.removeCartItem = async (req, res) => {
-    const { orderDB } = req.app.locals.dbs;
-    const Cart = require('../models/Cart')(orderDB);
-
-    const { restaurantId, menuItemId } = req.params;
-
-    try {
-        const cart = await Cart.findOne({ userId: req.params.userId });
-
-        cart.items = cart.items.filter(
-            (item) =>
-                item.menuItemId.toString() !== menuItemId ||
-                item.restaurantId.toString() !== restaurantId
-        );
-
+        cart.items[itemIndex].quantity = quantity;
         await cart.save();
-        res.json(cart);
+        res.json({ message: 'Quantity updated successfully', cart });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ message: err.message });
     }
 };
+
+
+// Remove item from cart
+exports.removeItemFromCart = async (req, res) => {
+    const { orderDB } = req.app.locals.dbs;
+    const Cart = require('../models/Cart')(orderDB);
+
+    const { userId, menuItemId } = req.params;
+
+    try {
+        const cart = await Cart.findOne({ userId });
+
+        if (!cart) return res.status(404).json({ message: 'Cart not found' });
+
+        cart.items = cart.items.filter(
+            (item) => item.menuItemId.toString() !== menuItemId
+        );
+
+        await cart.save();
+        res.json({ message: 'Item removed successfully', cart });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
+};
+
 
 
 

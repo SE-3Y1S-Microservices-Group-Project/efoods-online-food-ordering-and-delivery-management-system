@@ -1,4 +1,4 @@
-const User = require('../models/User');
+//const User = require('../models/User');
 //middleware to handle async errors automatically
 const asyncHandler = require('express-async-handler');
 
@@ -6,6 +6,8 @@ const asyncHandler = require('express-async-handler');
 //POST api/auth/register
 //public access
 exports.registerUser = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   //extract user inputs user req body
   const { firstName, lastName, contact, email, password } = req.body;
 
@@ -44,6 +46,8 @@ exports.registerUser = asyncHandler(async (req, res) => {
 //POST api/auth/login
 //public access
 exports.loginUser = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   //extract email and password from req
   const { email, password } = req.body;
 
@@ -78,6 +82,8 @@ exports.loginUser = asyncHandler(async (req, res) => {
 //GET api/auth/user/:id
 //private access
 exports.getUserById = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   //check if user is authenticated
   //if (!req.session.userId)
   if (!req.params.id) {
@@ -105,6 +111,8 @@ exports.getUserById = asyncHandler(async (req, res) => {
 //PUT api/auth/user/:id
 //private access
 exports.updateUserById = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   // Check if user is authenticated and authorized
   // if (!req.session.userId)
   if (!req.params.id) {
@@ -174,6 +182,8 @@ exports.updateUserById = asyncHandler(async (req, res) => {
 //DELETE api/auth/user/:id
 //private access
 exports.deleteUserById = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   // Check if user is authenticated and authorized
   //if (!req.session.userId)
   if (!req.params.id) {
@@ -222,6 +232,8 @@ exports.deleteUserById = asyncHandler(async (req, res) => {
 //POST api/user/logout
 //private access
 exports.logoutUser = asyncHandler(async (req, res) => {
+  const { orderDB } = req.app.locals.dbs;
+  const User = require('../models/User')(orderDB);
   //req.session.destroy
   req.destroy((err) => {
     if (err) {

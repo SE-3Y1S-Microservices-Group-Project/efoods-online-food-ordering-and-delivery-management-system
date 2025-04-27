@@ -83,6 +83,8 @@ exports.login = async (req, res) => {
       expiresIn: '1d'
     })
 
+    // localStorage.setItem('restaurantId', restaurant._id)
+
     res.status(200).json({
       token,
       restaurant: {
