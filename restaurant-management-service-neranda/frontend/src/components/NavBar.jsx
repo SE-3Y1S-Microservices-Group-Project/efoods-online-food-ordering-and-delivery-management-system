@@ -27,7 +27,7 @@ export default function NavBar() {
               <li><a href="/restaurant-dashboard" className="block px-3 py-2 rounded hover:bg-sky-100">Home</a></li>
               <li><a href="/restaurant-my" className="block px-3 py-2 rounded hover:bg-sky-100">Restaurant</a></li>
               <li><a href="/restaurant-menu" className="block px-3 py-2 rounded hover:bg-sky-100">Menu</a></li>
-              <li><a href="/restaurant-order" className="block px-3 py-2 rounded hover:bg-sky-100">Order</a></li>
+              {/* <li><a href="/restaurant-order" className="block px-3 py-2 rounded hover:bg-sky-100">Order</a></li> */}
               {/* <li><a href="#" className="block px-3 py-2 rounded hover:bg-sky-100">Home</a></li>
               <li><a href="#" className="block px-3 py-2 rounded hover:bg-sky-100">Link</a></li> */}
 

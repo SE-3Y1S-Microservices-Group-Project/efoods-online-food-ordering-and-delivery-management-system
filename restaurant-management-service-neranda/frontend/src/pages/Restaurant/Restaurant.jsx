@@ -64,7 +64,7 @@ export default function Restaurant() {
   };
 
   const handleEdit = () => {
-    navigate(`/restaurant/edit/${restaurant._id}`);
+    navigate(`/restaurant-edit/${restaurant._id}`);
   };
 
   // Loading state
