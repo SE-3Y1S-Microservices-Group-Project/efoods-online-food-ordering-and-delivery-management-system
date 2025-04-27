@@ -25,13 +25,13 @@ export default function Home() {
 
           <div className="flex gap-4">
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/restaurant-signin')}
               className="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-lg shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300 flex items-center gap-2"
             >
               <LogIn className="w-5 h-5" /> Login
             </button>
             <button
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/restaurant-signup')}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg shadow hover:shadow-lg transform hover:-translate-y-1 transition duration-300 flex items-center gap-2"
             >
               <UserPlus className="w-5 h-5" /> Register

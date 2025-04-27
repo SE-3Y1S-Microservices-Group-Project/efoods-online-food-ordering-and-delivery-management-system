@@ -1,5 +1,5 @@
 // const { restaurantDB } = req.app.locals.dbs;
-//const MenuItem = require('../models/MenuItem');
+// const MenuItem = require('../models/MenuItem');
 
 // Create Menu Item
 exports.create = async (req, res) => {
@@ -20,7 +20,7 @@ exports.create = async (req, res) => {
       isAvailable,
       sizes,
       addOns,
-      // restaurantId
+      restaurantId,
     } = req.body;
 
     const parsedSizes = sizes ? JSON.parse(sizes) : [];
@@ -28,11 +28,18 @@ exports.create = async (req, res) => {
 
     const finalPrice = price - (price * (discount || 0) / 100);
 
+  
     let imageUrls = [];
-    if (req.files && req.files.length > 0) {
-      imageUrls = req.files.map(file => `/uploads/menuitems/${file.filename}`);
-
+    if (req.file) {
+      imageUrls = [`/uploads/menuitems/${req.file.filename}`];
     }
+
+    // let imageUrls = [];
+    // if (req.files && req.files.length > 0) {
+    //   imageUrls = req.files.map(file => `/uploads/menuitems/${file.filename}`);
+    // } else if (req.file) {
+    //   imageUrls = [`/uploads/menuitems/${req.file.filename}`];
+    // }
 
 
     const menuItem = new MenuItem({
@@ -50,31 +57,42 @@ exports.create = async (req, res) => {
       isAvailable: isAvailable === 'true',
       sizes: parsedSizes,
       addOns: parsedAddOns,
-      // restaurantId,
+      restaurantId,
       image: imageUrls
     });
 
     await menuItem.save();
     res.status(201).json(menuItem);
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: 'Invalid input. Please check your data.' });
+    console.error("MenuItem creation error:", JSON.stringify(err, null, 2));
+    res.status(400).json({ error: err.message || 'Invalid input. Please check your data.' });
   }
 };
 
+
+// Get All
 // Get All
 exports.getAll = async (req, res) => {
   const { restaurantDB } = req.app.locals.dbs;
   const MenuItem = require('../models/MenuItem')(restaurantDB);
   try {
-    const items = await MenuItem.find().populate('restaurantId', 'name');
+    const { restaurantId } = req.query;  // 🛑 Get restaurantId from query params
+
+    let filter = {};
+    if (restaurantId) {
+      filter.restaurantId = restaurantId;   // 🔥 Filter by restaurantId
+    }
+
+    const items = await MenuItem.find(filter).populate('restaurantId', 'name');
     res.json(items);
-    // const items = await MenuItem.find().populate('name');
-    // res.json(items);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 // Get One
 exports.getOne = async (req, res) => {
@@ -119,9 +137,15 @@ exports.update = async (req, res) => {
       updateData.finalPrice = price - (price * discount / 100);
     }
 
+    
     if (req.files && req.files.length > 0) {
-      updateData.image = req.files.map(file => `/uploads/${file.filename}`);
+      updateData.image = req.files.map(file => `/uploads/menuitems/${file.filename}`);
+    } else {
+      // If no new image uploaded, keep old images
+      const existingMenuItem = await MenuItem.findById(req.params.id);
+      updateData.image = existingMenuItem.image;
     }
+    
 
     const updated = await MenuItem.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);

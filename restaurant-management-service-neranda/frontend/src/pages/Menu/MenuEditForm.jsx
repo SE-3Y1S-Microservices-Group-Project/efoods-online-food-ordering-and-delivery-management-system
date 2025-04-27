@@ -45,7 +45,7 @@ export default function MenuEditForm({ menuItem, onClose, onSuccess }) {
       });
 
       if (menuItem.image?.[0]) {
-        setImagePreview(`http://localhost:5000/${menuItem.image[0]}`);
+        setImagePreview(`http://localhost:5000${menuItem.image[0]}`);
       }
     }
   }, [menuItem]);
@@ -175,6 +175,7 @@ export default function MenuEditForm({ menuItem, onClose, onSuccess }) {
             <input type="file" accept="image/*" onChange={handleFileChange} className="w-full p-2 border rounded" />
             {imagePreview && <img src={imagePreview} alt="Preview" className="mt-2 h-32 object-cover rounded" />}
           </div>
+
 
           <div className="col-span-2">
             <label className="block mb-1 text-sm text-gray-700">Description</label>

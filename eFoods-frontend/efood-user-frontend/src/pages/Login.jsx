@@ -2,6 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
+import Footer from '../components/Footer'
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -11,17 +12,40 @@ export default function Login() {
     e.preventDefault()
     const res = await axios.post('http://localhost:5000/api/users/login', form)
     localStorage.setItem('userToken', res.data.token)
-    navigate('/')
+    navigate('/profile')
   }
 
   return (
-    <div className="bg-gradient-to-br from-green-200 to-green-50 p-8 max-w-md mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input type="email" placeholder="Email" onChange={e => setForm({ ...form, email: e.target.value })} className="border w-full p-2" required />
-        <input type="password" placeholder="Password" onChange={e => setForm({ ...form, password: e.target.value })} className="border w-full p-2" required />
-        <button type="submit" className="bg-sky-600 text-white px-4 py-2 rounded">Login</button>
-      </form>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex-grow flex items-center justify-center bg-gradient-to-br from-green-200 to-green-50 p-8">
+        <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              type="email"
+              placeholder="Email"
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="border w-full p-3 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              className="border w-full p-3 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-sky-600 text-white px-4 py-3 rounded hover:bg-sky-700 transition"
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+      <Footer />
     </div>
   )
 }
