@@ -1,10 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
 import AppUser from './AppUser';
-
-import Home from './pages/Home';
-import AboutUs from './pages/AboutUs';
-import ContactUs from './pages/ContactUs';
-import Footer from './components/Footer';
+import NotFound from './pages/NotFound';
 
 import ProtectedRestaurant from './components/auth/ProtectedRestaurant';
 import SignInR from './pages/Login'
@@ -15,6 +11,7 @@ const router = createBrowserRouter([
     {
         path: '/rts',
         element: <AppUser />,
+        errorElement: <NotFound />,
         children: [
           { path: 'restaurant-signin', element: <SignInR /> },
           { path: 'restaurant-signup', element: <SignUpR /> },
