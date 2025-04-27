@@ -1,5 +1,6 @@
 import Driver from '../models/driverModel.js';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 
 //get orders from a different database (sasin)
 export const getOrders = async (req, res) => {
@@ -31,6 +32,62 @@ export const getOrders = async (req, res) => {
     });
   }
 }
+
+export const getRestaurantAddress = async (req, res) => {
+  try {
+    // Get Restaurant model from the database connections
+    const { Restaurant } = req.app.locals.dbs;
+    
+    if (!Restaurant) {
+      return res.status(500).json({
+        success: false,
+        message: 'Restaurant model not available'
+      });
+    }
+    
+    // Validate if id is a valid ObjectId
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid restaurant ID format'
+      });
+    }
+    
+    // Find restaurant by ID and select address-related fields
+    const restaurant = await Restaurant.findById(id).select('name address city state country');
+    
+    // Check if restaurant exists
+    if (!restaurant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Restaurant not found'
+      });
+    }
+    
+    // Return restaurant address info
+    return res.status(200).json({
+      success: true,
+      data: {
+        id: restaurant._id,
+        name: restaurant.name,
+        address: restaurant.address,
+        city: restaurant.city,
+        state: restaurant.state,
+        country: restaurant.country,
+        // Only use the address field if it exists
+        fullAddress: restaurant.address || "No address available"
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching restaurant address:'.red.bold, error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch restaurant address',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+};
 
 //delete
 // Delete an order from a different database

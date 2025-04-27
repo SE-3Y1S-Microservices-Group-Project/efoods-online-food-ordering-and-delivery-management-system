@@ -61,7 +61,7 @@ export default function RestaurantDetails() {
               <div className="p-5">
                 <h3 className="font-bold text-lg text-gray-800 mb-1">{item.name}</h3>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-3">{item.description}</p>
-                <p className="text-green-600 font-bold text-lg">Rs. {item.finalPrice}</p>
+                <p className="text-green-600 font-bold text-lg">Rs. {item.price}</p>
               </div>
             </div>
           ))}
@@ -94,7 +94,7 @@ export default function RestaurantDetails() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">{selected.name}</h2>
                 <p className="text-gray-600 mb-4">{selected.description}</p>
                 <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold text-green-600">Rs. {selected.finalPrice}</span>
+                  <span className="text-xl font-bold text-green-600">Rs. {selected.price}</span>
                 </div>
               </div>
               
