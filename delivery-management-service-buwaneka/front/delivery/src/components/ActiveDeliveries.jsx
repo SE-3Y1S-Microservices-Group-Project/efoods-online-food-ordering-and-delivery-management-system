@@ -35,7 +35,6 @@ useEffect(() => {
   }
 }, []);
 
-
   // Load claimed and delivered orders from localStorage on component mount
   useEffect(() => {
     try {
@@ -54,6 +53,8 @@ useEffect(() => {
     }
   }, []);
 
+
+  
   // Fetch orders from the connected database
   useEffect(() => {
     const fetchOrders = async () => {
@@ -173,6 +174,9 @@ useEffect(() => {
 
     fetchOrders();
     
+
+
+
     // Set up interval to refresh orders every 30 seconds
     const interval = setInterval(fetchOrders, 30000);
     
@@ -391,7 +395,6 @@ useEffect(() => {
     setSelectedDeliveryId(delivery._id); // Update this to also set selected delivery ID (remove if crashes) an uncomment above 3 lines
   };
 
-
   const getStatusText = (status) => {
     switch (status) {
       case 'accepted':
@@ -461,9 +464,9 @@ useEffect(() => {
             <div className="mb-4">
               <p className="text-sm text-gray-600">Restaurant:</p>
               <p className="font-medium">{selectedDelivery.restaurantName}</p>
-              {selectedDelivery.pickupAddress && (
+              {/* {selectedDelivery.pickupAddress && (
                 <p className="text-gray-600">{selectedDelivery.pickupAddress}</p>
-              )}
+              )} */}
             </div>
             
             <div className="mb-4">
@@ -682,3 +685,4 @@ useEffect(() => {
 };
 
 export default ActiveDeliveries;
+
