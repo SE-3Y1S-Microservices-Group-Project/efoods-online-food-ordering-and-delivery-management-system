@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import DeliveryMap from './DeliveryMap'; 
 
 const ActiveDeliveries = () => {
   const [orders, setOrders] = useState([]);
@@ -10,7 +11,29 @@ const ActiveDeliveries = () => {
   const [claimedOrderIds, setClaimedOrderIds] = useState([]);
   const [deliveredOrderIds, setDeliveredOrderIds] = useState([]);
 
+  //remove if crashes
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
+  const [driverLocation, setDriverLocation] = useState({ lat: 37.7749, lng: -122.4194 });
 
+// remove if crashes
+useEffect(() => {
+  if (navigator.geolocation) {
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        setDriverLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        });
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+      },
+      { enableHighAccuracy: true }
+    );
+    
+    return () => navigator.geolocation.clearWatch(watchId);
+  }
+}, []);
 
 
   // Load claimed and delivered orders from localStorage on component mount
@@ -360,9 +383,14 @@ const ActiveDeliveries = () => {
     }
   };
 
+  // const handleViewDetails = (delivery) => {
+  //   setSelectedDelivery(delivery);
+  // };
   const handleViewDetails = (delivery) => {
     setSelectedDelivery(delivery);
+    setSelectedDeliveryId(delivery._id); // Update this to also set selected delivery ID (remove if crashes) an uncomment above 3 lines
   };
+
 
   const getStatusText = (status) => {
     switch (status) {
@@ -433,6 +461,9 @@ const ActiveDeliveries = () => {
             <div className="mb-4">
               <p className="text-sm text-gray-600">Restaurant:</p>
               <p className="font-medium">{selectedDelivery.restaurantName}</p>
+              {selectedDelivery.pickupAddress && (
+                <p className="text-gray-600">{selectedDelivery.pickupAddress}</p>
+              )}
             </div>
             
             <div className="mb-4">
@@ -536,6 +567,34 @@ const ActiveDeliveries = () => {
         </div>
       )}
       
+     
+      {/* {activeDeliveries.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
+          <div className="bg-white rounded-lg shadow h-96">
+            <DeliveryMap 
+              activeDeliveries={activeDeliveries}
+              selectedDeliveryId={selectedDeliveryId}
+              setSelectedDeliveryId={setSelectedDeliveryId}
+              driverLocation={driverLocation}
+            />
+          </div>
+        </div>
+      )} */}
+      {activeDeliveries && activeDeliveries.length > 0 && (
+  <div className="mb-8">
+    <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
+    <div className="bg-white rounded-lg shadow h-96">
+      <DeliveryMap 
+        activeDeliveries={activeDeliveries}
+        selectedDeliveryId={selectedDeliveryId}
+        setSelectedDeliveryId={setSelectedDeliveryId}
+        driverLocation={driverLocation}
+      />
+    </div>
+  </div>
+)}
+      
       {/* Active Deliveries Section */}
       <h3 className="text-xl font-bold mb-4">Active Deliveries</h3>
       {activeDeliveries.length === 0 ? (
@@ -618,10 +677,6 @@ const ActiveDeliveries = () => {
           ))}
         </div>
       )}
-
-      {/*  bellow lines if crashes with above 2 state lines and its useeffect funtion */}
-      
-
     </div>
   );
 };
