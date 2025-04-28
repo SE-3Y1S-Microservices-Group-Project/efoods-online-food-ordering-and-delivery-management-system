@@ -3,29 +3,29 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/connectDB');
 const paymentRoutes = require("./routes/payment");
+const paymentController = require("./controllers/paymentController");
 
 dotenv.config();
 
-// ADD THIS BEFORE express.json()
-const bodyParser = require('body-parser');
-
 const app = express();
 
+// Use express.raw() only for the webhook route, as it requires the raw body
+app.post('/api/payment/webhook', express.raw({ type: 'application/json' }), paymentController.handleWebhook);
+
+// Now, apply general middlewares
 app.use(cors({
   origin: 'http://localhost:5173',  // frontend origin
   credentials: true                 // allow cookies and headers like Authorization
 }));
-app.use(express.json());
+
+app.use(express.json()); // This comes AFTER webhook
+app.use(express.urlencoded({ extended: true }));
 
 let dbConnections = {};
 
 connectDB().then((connections) => {
   dbConnections = connections;
   app.locals.dbs = dbConnections;
-  
-// For Stripe Webhook ONLY - raw body
-app.use('/api/payment/webhook', bodyParser.raw({ type: 'application/json' }));
-
 
   // Routes
   app.use("/api/payment", paymentRoutes);

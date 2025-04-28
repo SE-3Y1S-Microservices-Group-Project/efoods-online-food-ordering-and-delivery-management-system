@@ -26,7 +26,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import FAQs from './pages/FAQs';
 
-const stripePromise = loadStripe('pk_test_51RGxa9QwYkP7b05Rhk7zOc5FqNp2go8wELiqw6sFbpK874upT4hV3crf94pDEYHSi6YHdaGXuKJH0JXR3fjB8pxI00fTmS611t');
+const stripePromise = loadStripe('pk_test_51RGy5IROKHbYsMp0Ue9D52MOfKF51l6IH0V1FHVURZwezgcHyCRSPD5RaqcCx0MoLIVEspYVpZJZ18kcFnXZbjWQ00mXaxfi3M');
 
 // 👇 Wrapper component to provide Stripe Elements context
 const StripeWrapper = ({ children }) => (

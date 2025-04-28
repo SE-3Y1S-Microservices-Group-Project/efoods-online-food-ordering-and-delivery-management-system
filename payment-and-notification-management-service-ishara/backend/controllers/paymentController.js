@@ -115,22 +115,22 @@ exports.createCheckoutSession = async (req, res) => {
 };
 
 
-//Stripe webhook
+
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+// Stripe Webhook Handler
 exports.handleWebhook = async (req, res) => {
-  const sig = req.headers["stripe-signature"];
-  let event;
+  const sigHeader = req.headers['stripe-signature'];
+const rawBody = req.body;
 
-  try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
+let event;
 
+try {
+  event = stripe.webhooks.constructEvent(rawBody, sigHeader, endpointSecret);
+} catch (err) {
+  console.log(`Webhook signature verification failed: ${err.message}`);
+  return res.status(400).send(`Webhook error: ${err.message}`);
+}
+  // Step 2: Handle the event based on the type
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
     const orderId = session.metadata.orderId;
@@ -140,40 +140,63 @@ exports.handleWebhook = async (req, res) => {
     console.log("Stripe session completed:", stripeSessionId, paymentStatus);
 
     try {
+      // Step 3: Validate the Order ID
       const orderDB = req.app.locals.dbs.orderDB;
       const Order = require("../../../order-management-service-sasin/backend/models/Order")(orderDB);
 
+      // Step 4: Fetch the Order from the Database
       const order = await Order.findById(orderId);
       if (!order) {
         console.warn("Order not found:", orderId);
         return res.status(404).json({ message: "Order not found" });
       }
 
-      order.isPaid = true; // or order.isPaid = true;
+      // Step 5: Update Order Payment Status
+      order.isPaid = true;
+      console.log("Updating order to paid", order);
       order.paymentInfo = {
         stripeSessionId,
         status: paymentStatus,
         paidAt: new Date(),
       };
 
-      await order.save();
+      // Step 6: Log Order Before Saving (for debugging)
+      console.log(session.payment_status);
+      console.log("Order before saving:", order);
 
-      console.log(" Order updated as paid:", orderId);
+      // Step 7: Save the Order in the Database
+      try {
+        await order.save();
+        console.log("Order updated as paid:", orderId);
+      } catch (dbErr) {
+        console.error("Error saving order to the database:", dbErr.message);
+        return res.status(500).json({ error: "Failed to save order" });
+      }
 
-      await sendEmail({
-        to: order.user.email,
-        subject: "Payment Confirmed - E-Foods",
-        text: `Thank you for your payment for Order #${order._id}!`,
-      });
+      // Step 8: Send Confirmation Email
+      try {
+        await sendEmail({
+          to: order.user.email,
+          subject: "Payment Confirmed - E-Foods",
+          text: `Thank you for your payment for Order #${order._id}!`,
+        });
+        console.log("Confirmation email sent to:", order.user.email);
+      } catch (emailErr) {
+        console.error("Error sending email:", emailErr.message);
+      }
 
-    } catch (dbErr) {
-      console.error("Error updating order:", dbErr);
-      return res.status(500).json({ error: "Failed to update order status" });
+    } catch (err) {
+      console.error("Error processing webhook:", err.message);
+      return res.status(500).json({ error: "Failed to process webhook" });
     }
+  } else {
+    console.warn("Unhandled event type:", event.type);
   }
 
+  // Step 9: Respond to Stripe to acknowledge the receipt of the webhook
   res.status(200).json({ received: true });
 };
+
 
 
 //Get payment session details
