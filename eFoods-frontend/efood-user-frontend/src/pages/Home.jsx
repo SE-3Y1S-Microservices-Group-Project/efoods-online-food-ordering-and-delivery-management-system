@@ -298,7 +298,7 @@ export default function Home() {
             />
             <OfferCard 
               title="Family Bundle" 
-              text="10% OFF on orders above LKR 1000" 
+              text="10% OFF on orders above USD 1000" 
               code="unavailable"
               bgColor="#1F7D53" 
             />
