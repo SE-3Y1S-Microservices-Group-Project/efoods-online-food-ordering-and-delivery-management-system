@@ -77,7 +77,7 @@ const PaymentSuccess = () => {
     // Transaction details
     doc.text('Transaction Details:', 15, 70);
     doc.text(`Reference ID: ${referenceNumber}`, 15, 80); // Use formatted reference number
-    doc.text(`Amount: Rs. ${paymentDetails.amount / 100}`, 15, 90);
+    doc.text(`Amount: US$. ${paymentDetails.amount / 100}`, 15, 90);
     doc.text(`Status: ${paymentDetails.status}`, 15, 100);
     doc.text(`Date: ${new Date(paymentDetails.created * 1000).toLocaleString()}`, 15, 110);
 
@@ -121,7 +121,7 @@ const PaymentSuccess = () => {
           <div className="bg-[#F8F9FA] p-4 rounded-lg mb-6 text-left">
             <h3 className="font-semibold text-[#255F38] mb-2">Order Summary</h3>
             <p className="text-sm"><span className="font-medium">Reference:</span> {referenceNumber}</p>
-            <p className="text-sm"><span className="font-medium">Amount:</span> Rs. {paymentDetails.amount / 100}</p>
+            <p className="text-sm"><span className="font-medium">Amount:</span> US$. {paymentDetails.amount / 100}</p>
             <p className="text-sm"><span className="font-medium">Status:</span> <span className="text-[#1F7D53] font-bold">{paymentDetails.status}</span></p>
           </div>
         )}

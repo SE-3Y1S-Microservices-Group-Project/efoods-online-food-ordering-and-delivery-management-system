@@ -3,7 +3,7 @@ const router = express.Router();
 const paymentController = require("../controllers/paymentController");
 
 //webhook
-router.post("/webhook",paymentController.handleWebhook);
+//router.post("/webhook",paymentController.handleWebhook);
 
 // Fetch order + user + card data
 router.get("/placeorder/:userId", paymentController.getCheckoutInfo);

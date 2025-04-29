@@ -179,7 +179,7 @@ const PlaceOrder = () => {
                       <p className="font-medium">{item.menuItemName} <span className="text-[#1F7D53] font-bold">(x{item.quantity})</span></p>
                       <p className="text-sm text-gray-500">{item.restaurantName}</p>
                     </div>
-                    <p className="font-semibold">Rs. {item.price * item.quantity}</p>
+                    <p className="font-semibold">US$. {item.price * item.quantity}</p>
                   </div>
                 </div>
               ))}
@@ -187,7 +187,7 @@ const PlaceOrder = () => {
             <div className="border-t border-[#255F38] pt-4 mt-3">
               <p className="font-bold text-xl flex justify-between">
                 <span>Total Amount:</span>
-                <span className="text-[#1F7D53]">Rs. {checkoutData.order.totalAmount}</span>
+                <span className="text-[#1F7D53]">US$. {checkoutData.order.totalAmount}</span>
               </p>
             </div>
           </div>

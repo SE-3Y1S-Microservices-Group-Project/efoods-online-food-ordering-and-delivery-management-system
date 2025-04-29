@@ -107,7 +107,7 @@ const fetchMenuItems = async () => {
   const handleExportPDF = () => {
     const doc = new jsPDF();
     const rows = menuItems.map(item => [
-      item.name, item.category, `Rs. ${item.price}`, `${item.discount}%`, item.stock, item.isAvailable ? 'Yes' : 'No'
+      item.name, item.category, `US$. ${item.price}`, `${item.discount}%`, item.stock, item.isAvailable ? 'Yes' : 'No'
     ]);
     doc.autoTable({
       head: [['Name', 'Category', 'Price', 'Discount', 'Stock', 'Available']],
@@ -300,12 +300,12 @@ const fetchMenuItems = async () => {
                         {item.discount > 0 ? (
                           <div className="flex items-baseline gap-2">
                             <p className="font-bold text-lg text-sky-700">
-                              Rs. {(item.price * (1 - item.discount / 100)).toFixed(0)}
+                            US$. {(item.price * (1 - item.discount / 100)).toFixed(0)}
                             </p>
-                            <p className="text-sm text-gray-500 line-through">Rs. {item.price}</p>
+                            <p className="text-sm text-gray-500 line-through">US$. {item.price}</p>
                           </div>
                         ) : (
-                          <p className="font-bold text-lg text-sky-700">Rs. {item.price}</p>
+                          <p className="font-bold text-lg text-sky-700">US$. {item.price}</p>
                         )}
                       </div>
                       <div className="flex gap-1">
@@ -382,11 +382,11 @@ const fetchMenuItems = async () => {
                   
                   <div className="mt-2 flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-sky-600">
-                      Rs. {(selectedItem.price * (1 - selectedItem.discount / 100)).toFixed(0)}
+                    US$. {(selectedItem.price * (1 - selectedItem.discount / 100)).toFixed(0)}
                     </span>
                     {selectedItem.discount > 0 && (
                       <>
-                        <span className="text-lg text-gray-400 line-through">Rs. {selectedItem.price}</span>
+                        <span className="text-lg text-gray-400 line-through">US$. {selectedItem.price}</span>
                         <span className="text-sm font-medium text-red-500">({selectedItem.discount}% off)</span>
                       </>
                     )}
@@ -447,7 +447,7 @@ const fetchMenuItems = async () => {
                         {selectedItem.sizes.map((size, idx) => (
                           <div key={idx} className="border border-gray-200 rounded p-2 text-center">
                             <p className="font-medium">{size.size}</p>
-                            <p className="text-sm text-gray-500">Rs. {size.price}</p>
+                            <p className="text-sm text-gray-500">US$. {size.price}</p>
                           </div>
                         ))}
                       </div>
@@ -461,7 +461,7 @@ const fetchMenuItems = async () => {
                         {selectedItem.addOns.map((addon, idx) => (
                           <div key={idx} className="flex justify-between items-center border-b border-gray-100 py-1">
                             <span>{addon.name}</span>
-                            <span className="text-sky-600">Rs. {addon.price}</span>
+                            <span className="text-sky-600">US$. {addon.price}</span>
                           </div>
                         ))}
                       </div>
