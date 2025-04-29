@@ -31,6 +31,7 @@ function App() {
             } 
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/deliveries" element={<Dashboard />} />
         </Routes>
       </Router>
     </AuthProvider>

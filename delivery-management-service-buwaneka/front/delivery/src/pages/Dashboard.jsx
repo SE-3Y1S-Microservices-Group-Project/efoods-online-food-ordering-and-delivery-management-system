@@ -251,10 +251,10 @@ const Dashboard = () => {
                 <h3 className="font-medium text-gray-700">Monthly Deliveries</h3>
                 <p className="text-2xl font-bold mt-2">{dashboardData.monthlyDeliveries}</p>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow">
+              {/* <div className="bg-white p-4 rounded-lg shadow">
                 <h3 className="font-medium text-gray-700">Average Rating</h3>
                 <p className="text-2xl font-bold mt-2">{dashboardData.averageRating.toFixed(1)}</p>
-              </div>
+              </div> */}
             </div>
             <div className="mt-6">
               <div className="bg-white p-4 rounded-lg shadow">
@@ -370,11 +370,11 @@ const Dashboard = () => {
             className={`w-full text-left px-4 py-2 flex items-center ${activeTab === 'notifications' ? 'bg-gray-200 font-medium' : 'hover:bg-gray-100'}`}
           >
             <span className="material-icons mr-3 text-gray-600">Notifications</span>
-            {dashboardData.availableJobs > 0 && (
+            {/* {dashboardData.availableJobs > 0 && (
               <span className="ml-auto bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {dashboardData.availableJobs}
               </span>
-            )}
+            )} */}
           </button>
           <button 
             onClick={handleLogout}

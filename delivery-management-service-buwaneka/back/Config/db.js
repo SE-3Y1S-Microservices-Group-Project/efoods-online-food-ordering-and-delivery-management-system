@@ -97,7 +97,7 @@ const connectDB = async () => {
       },
       isPaid: {
         type: Boolean,
-        default: false
+        default: true
       },
       paidAt: {
         type: Date

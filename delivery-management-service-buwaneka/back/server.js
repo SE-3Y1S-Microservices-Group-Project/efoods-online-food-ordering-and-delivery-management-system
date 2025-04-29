@@ -29,6 +29,8 @@ connectDB().then((connections) => {
   
   // Make connections accessible in the app
   app.locals.dbs = dbConnections;
+
+  console.log('Available DB models:', Object.keys(app.locals.dbs));
   
   // Routes
   app.use('/api/drivers', driverRoutes);

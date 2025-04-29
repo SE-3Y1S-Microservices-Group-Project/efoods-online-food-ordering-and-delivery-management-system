@@ -78,12 +78,16 @@ const EarningsOverview = () => {
       
       // Group by week for month view
       const weeklyData = groupByWeek(sortedHistory, startOfMonth);
+      
+      // Calculate totals for the filtered period
+      const periodTotal = weeklyData.reduce((sum, entry) => sum + entry.amount, 0);
+      
       return {
-        total: data.total,
-        deliveries: data.deliveries,
-        tips: data.tips,
-        bonuses: data.bonuses,
-        average: data.count > 0 ? data.total / data.count : 0,
+        total: periodTotal,
+        deliveries: periodTotal * 0.9, // 90% delivery pay
+        tips: periodTotal * 0.05, // 5% tips
+        bonuses: periodTotal * 0.05, // 5% bonuses
+        average: data.count > 0 ? periodTotal / data.count : 0,
         history: weeklyData
       };
     } else if (selectedPeriod === 'year') {
@@ -92,29 +96,29 @@ const EarningsOverview = () => {
       
       // Group by month for year view
       const monthlyData = groupByMonth(sortedHistory, startOfYear);
+      
+      // Calculate totals for the filtered period
+      const periodTotal = monthlyData.reduce((sum, entry) => sum + entry.amount, 0);
+      
       return {
-        total: data.total,
-        deliveries: data.deliveries,
-        tips: data.tips,
-        bonuses: data.bonuses,
-        average: data.count > 0 ? data.total / data.count : 0,
+        total: periodTotal,
+        deliveries: periodTotal * 0.9, // 90% delivery pay
+        tips: periodTotal * 0.05, // 5% tips
+        bonuses: periodTotal * 0.05, // 5% bonuses
+        average: data.count > 0 ? periodTotal / data.count : 0,
         history: monthlyData
       };
     }
 
-    // Calculate totals for the filtered period
+    // Calculate totals for the filtered period (week)
     const periodTotal = filteredHistory.reduce((sum, entry) => sum + entry.amount, 0);
     const periodDeliveryCount = filteredHistory.reduce((sum, entry) => sum + entry.deliveries, 0);
     
-    // For simplicity, estimate delivery pay and tips based on overall ratios
-    const deliveryPayRatio = data.total > 0 ? data.deliveries / data.total : 0.6;
-    const tipsRatio = data.total > 0 ? data.tips / data.total : 0.4;
-    
     return {
       total: periodTotal,
-      deliveries: periodTotal * deliveryPayRatio,
-      tips: periodTotal * tipsRatio,
-      bonuses: 0, // Assume no bonuses for simplicity
+      deliveries: periodTotal * 0.9, // 90% delivery pay
+      tips: periodTotal * 0.05, // 5% tips
+      bonuses: periodTotal * 0.05, // 5% bonuses
       average: periodDeliveryCount > 0 ? periodTotal / periodDeliveryCount : 0,
       history: filteredHistory
     };
@@ -283,7 +287,7 @@ const EarningsOverview = () => {
               <h3 className="text-lg font-medium text-gray-700 mb-2">Tips</h3>
               <p className="text-3xl font-bold text-purple-600">{formatCurrency(earnings.tips)}</p>
               <div className="mt-4 text-sm text-gray-500">
-                {earnings.total > 0 ? ((earnings.tips / earnings.total) * 100).toFixed(1) : '0'}% of total earnings
+                {earnings.total > 0 ? '5.0' : '0'}% of total earnings
               </div>
             </div>
           </div>
@@ -313,15 +317,15 @@ const EarningsOverview = () => {
                     {earnings.total > 0 && (
                       <>
                         <div 
-                          style={{ width: `${(earnings.deliveries / earnings.total) * 100}%` }}
+                          style={{ width: `90%` }}
                           className="bg-blue-500 h-full"
                         ></div>
                         <div 
-                          style={{ width: `${(earnings.tips / earnings.total) * 100}%` }}
+                          style={{ width: `5%` }}
                           className="bg-purple-500 h-full"
                         ></div>
                         <div 
-                          style={{ width: `${(earnings.bonuses / earnings.total) * 100}%` }}
+                          style={{ width: `5%` }}
                           className="bg-green-500 h-full"
                         ></div>
                       </>
@@ -331,15 +335,15 @@ const EarningsOverview = () => {
                 <div className="flex text-xs mt-2 justify-between">
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-blue-500 rounded-full mr-1"></div>
-                    <span>Delivery Pay ({earnings.total > 0 ? ((earnings.deliveries / earnings.total) * 100).toFixed(1) : '0'}%)</span>
+                    <span>Delivery Pay (90.0%)</span>
                   </div>
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-purple-500 rounded-full mr-1"></div>
-                    <span>Tips ({earnings.total > 0 ? ((earnings.tips / earnings.total) * 100).toFixed(1) : '0'}%)</span>
+                    <span>Tips (5.0%)</span>
                   </div>
                   <div className="flex items-center">
                     <div className="h-3 w-3 bg-green-500 rounded-full mr-1"></div>
-                    <span>Bonuses ({earnings.total > 0 ? ((earnings.bonuses / earnings.total) * 100).toFixed(1) : '0'}%)</span>
+                    <span>Bonuses (5.0%)</span>
                   </div>
                 </div>
               </div>

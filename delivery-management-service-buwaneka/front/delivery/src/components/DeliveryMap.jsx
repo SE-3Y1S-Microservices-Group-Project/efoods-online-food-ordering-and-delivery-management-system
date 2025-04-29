@@ -9,7 +9,7 @@ const containerStyle = {
   height: '100%'
 };
 
-// Marker colors
+// Marker colors 
 const markerIcons = {
   driver: {
     path: "M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z",
@@ -85,8 +85,8 @@ const DeliveryMap = ({ activeDeliveries, selectedDeliveryId, setSelectedDelivery
 
   // Default center (will be overridden when locations are available)
   const [center, setCenter] = useState({
-    lat: driverLocation?.lat || 37.7749,
-    lng: driverLocation?.lng || -122.4194
+    lat: driverLocation?.lat || 6.927079,  // Default to Sri Lanka coordinates
+    lng: driverLocation?.lng || 79.861244
   });
 
   // Find the currently selected delivery
@@ -128,6 +128,34 @@ const DeliveryMap = ({ activeDeliveries, selectedDeliveryId, setSelectedDelivery
     }
   }, [activeDeliveries]);
 
+  // Helper function to convert address to coordinates - returns a Promise
+  const geocodeAddress = async (address, tag) => {
+    if (!address || !geocoderRef.current) {
+      return null;
+    }
+    
+    try {
+      const result = await new Promise((resolve, reject) => {
+        geocoderRef.current.geocode({ address }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            resolve({
+              lat: results[0].geometry.location.lat(),
+              lng: results[0].geometry.location.lng()
+            });
+          } else {
+            console.warn(`Failed to geocode ${tag} address: ${address}, status: ${status}`);
+            reject(new Error(`Geocoding failed: ${status}`));
+          }
+        });
+      });
+      
+      return result;
+    } catch (error) {
+      console.error(`Error geocoding ${tag} address:`, error);
+      return null;
+    }
+  };
+
   // Geocode addresses to coordinates - BUT ONLY AFTER map is fully loaded
   useEffect(() => {
     // Ensure all dependencies are available before proceeding
@@ -148,87 +176,91 @@ const DeliveryMap = ({ activeDeliveries, selectedDeliveryId, setSelectedDelivery
     
     const geocoder = geocoderRef.current;
     const deliveriesWithCoords = JSON.parse(JSON.stringify(activeDeliveries)); // Deep clone
-    let pendingGeocodes = 0;
-
-    deliveriesWithCoords.forEach((delivery, index) => {
-      // Skip geocoding if coordinates already exist
-      if (delivery.pickupLocation?.lat && delivery.dropoffLocation?.lat) {
-        console.log(`Delivery ${delivery.orderNumber} already has coordinates, skipping geocoding`);
-        return;
-      }
-      
-      // Ensure location objects exist
-      if (!delivery.pickupLocation) delivery.pickupLocation = {};
-      if (!delivery.dropoffLocation) delivery.dropoffLocation = {};
-      
-      // Geocode restaurant address
-      if (delivery.pickupAddress && (!delivery.pickupLocation.lat || !delivery.pickupLocation.lng)) {
-        pendingGeocodes++;
-        geocoder.geocode({ address: delivery.pickupAddress }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            deliveriesWithCoords[index].pickupLocation = {
-              lat: results[0].geometry.location.lat(),
-              lng: results[0].geometry.location.lng()
+    
+    // Use async/await for cleaner geocoding
+    const processGeocodingAsync = async () => {
+      for (let i = 0; i < deliveriesWithCoords.length; i++) {
+        const delivery = deliveriesWithCoords[i];
+        
+        // Ensure location objects exist
+        if (!delivery.pickupLocation) delivery.pickupLocation = {};
+        if (!delivery.dropoffLocation) delivery.dropoffLocation = {};
+        
+        // First, check if we have a restaurant address to geocode
+        if (delivery.restaurantAddress && (!delivery.pickupLocation.lat || !delivery.pickupLocation.lng)) {
+          console.log(`Geocoding restaurant address for ${delivery._id}: ${delivery.restaurantAddress}`);
+          try {
+            const coords = await geocodeAddress(delivery.restaurantAddress, "restaurant");
+            if (coords) {
+              delivery.pickupLocation = coords;
+              delivery.pickupAddress = delivery.restaurantAddress; // Use restaurant address as pickup address
+              console.log(`Successfully geocoded restaurant address for ${delivery._id}:`, coords);
+            } else {
+              // Fallback for restaurant location
+              delivery.pickupLocation = {
+                lat: (driverLocation?.lat || 6.927079) - (0.01 * (i + 1)),
+                lng: (driverLocation?.lng || 79.861244) - (0.01 * (i + 1))
+              };
+              console.log(`Using fallback restaurant location for ${delivery._id}:`, delivery.pickupLocation);
+            }
+          } catch (error) {
+            console.error(`Error geocoding restaurant address for ${delivery._id}:`, error);
+            // Fallback
+            delivery.pickupLocation = {
+              lat: (driverLocation?.lat || 6.927079) - (0.01 * (i + 1)),
+              lng: (driverLocation?.lng || 79.861244) - (0.01 * (i + 1))
             };
-            console.log(`Geocoded pickup for ${delivery.orderNumber}:`, deliveriesWithCoords[index].pickupLocation);
-          } else {
-            console.warn(`Failed to geocode pickup address for delivery ${delivery._id}:`, status);
-            // Use fallback location
-            deliveriesWithCoords[index].pickupLocation = {
-              lat: (driverLocation?.lat || 37.7749) - (0.01 * (index + 1)),
-              lng: (driverLocation?.lng || -122.4194) - (0.01 * (index + 1))
-            };
-            console.log(`Using fallback pickup location for ${delivery.orderNumber}:`, deliveriesWithCoords[index].pickupLocation);
           }
-          
-          pendingGeocodes--;
-          checkGeocodingComplete();
-        });
+        } else if (!delivery.pickupLocation.lat || !delivery.pickupLocation.lng) {
+          // No restaurant address but still need pickup location
+          delivery.pickupLocation = {
+            lat: (driverLocation?.lat || 6.927079) - (0.01 * (i + 1)),
+            lng: (driverLocation?.lng || 79.861244) - (0.01 * (i + 1))
+          };
+          console.log(`No restaurant address, using fallback for ${delivery._id}:`, delivery.pickupLocation);
+        }
+        
+        // Second, check if we have a dropoff address to geocode
+        if (delivery.dropoffAddress && (!delivery.dropoffLocation.lat || !delivery.dropoffLocation.lng)) {
+          console.log(`Geocoding dropoff address for ${delivery._id}: ${delivery.dropoffAddress}`);
+          try {
+            const coords = await geocodeAddress(delivery.dropoffAddress, "dropoff");
+            if (coords) {
+              delivery.dropoffLocation = coords;
+              console.log(`Successfully geocoded dropoff address for ${delivery._id}:`, coords);
+            } else {
+              // Fallback for customer location
+              delivery.dropoffLocation = {
+                lat: (driverLocation?.lat || 6.927079) + (0.01 * (i + 1)),
+                lng: (driverLocation?.lng || 79.861244) + (0.01 * (i + 1))
+              };
+              console.log(`Using fallback dropoff location for ${delivery._id}:`, delivery.dropoffLocation);
+            }
+          } catch (error) {
+            console.error(`Error geocoding dropoff address for ${delivery._id}:`, error);
+            // Fallback
+            delivery.dropoffLocation = {
+              lat: (driverLocation?.lat || 6.927079) + (0.01 * (i + 1)),
+              lng: (driverLocation?.lng || 79.861244) + (0.01 * (i + 1))
+            };
+          }
+        } else if (!delivery.dropoffLocation.lat || !delivery.dropoffLocation.lng) {
+          // No dropoff address but still need dropoff location
+          delivery.dropoffLocation = {
+            lat: (driverLocation?.lat || 6.927079) + (0.01 * (i + 1)),
+            lng: (driverLocation?.lng || 79.861244) + (0.01 * (i + 1))
+          };
+          console.log(`No dropoff address, using fallback for ${delivery._id}:`, delivery.dropoffLocation);
+        }
       }
       
-      // Geocode customer address
-      if (delivery.dropoffAddress && (!delivery.dropoffLocation.lat || !delivery.dropoffLocation.lng)) {
-        pendingGeocodes++;
-        geocoder.geocode({ address: delivery.dropoffAddress }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            deliveriesWithCoords[index].dropoffLocation = {
-              lat: results[0].geometry.location.lat(),
-              lng: results[0].geometry.location.lng()
-            };
-            console.log(`Geocoded dropoff for ${delivery.orderNumber}:`, deliveriesWithCoords[index].dropoffLocation);
-          } else {
-            console.warn(`Failed to geocode dropoff address for delivery ${delivery._id}:`, status);
-            // Use fallback location
-            deliveriesWithCoords[index].dropoffLocation = {
-              lat: (driverLocation?.lat || 37.7749) + (0.01 * (index + 1)),
-              lng: (driverLocation?.lng || -122.4194) + (0.01 * (index + 1))
-            };
-            console.log(`Using fallback dropoff location for ${delivery.orderNumber}:`, deliveriesWithCoords[index].dropoffLocation);
-          }
-          
-          pendingGeocodes--;
-          checkGeocodingComplete();
-        });
-      }
-    });
-
-    // Helper function to finalize geocoding
-    function checkGeocodingComplete() {
-      if (pendingGeocodes === 0) {
-        console.log("All geocoding complete, updating state with:", deliveriesWithCoords);
-        setDeliveriesWithCoordinates(deliveriesWithCoords);
-        setGeocodingComplete(true);
-        setLoadingProgress("");
-      }
-    }
-
-    // If no geocoding was needed (all coords already exist)
-    if (pendingGeocodes === 0) {
-      console.log("No geocoding needed, all coordinates exist");
+      console.log("All geocoding complete, updating state with:", deliveriesWithCoords);
       setDeliveriesWithCoordinates(deliveriesWithCoords);
       setGeocodingComplete(true);
       setLoadingProgress("");
-    }
+    };
+    
+    processGeocodingAsync();
     
   }, [activeDeliveries, apiLoaded, driverLocation]);
 
@@ -470,7 +502,7 @@ const DeliveryMap = ({ activeDeliveries, selectedDeliveryId, setSelectedDelivery
                 >
                   <div className="p-2">
                     <p className="font-bold">{delivery.restaurantName || 'Restaurant'}</p>
-                    <p className="text-sm">{delivery.pickupAddress || 'Pickup Location'}</p>
+                    <p className="text-sm">{delivery.restaurantAddress || delivery.pickupAddress || 'Pickup Location'}</p>
                     <p className="text-xs mt-1">Order #{delivery.orderNumber}</p>
                   </div>
                 </InfoWindow>

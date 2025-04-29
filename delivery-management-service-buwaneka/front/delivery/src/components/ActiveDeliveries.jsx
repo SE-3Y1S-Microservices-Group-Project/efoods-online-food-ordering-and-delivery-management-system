@@ -8,32 +8,41 @@ const ActiveDeliveries = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false); // New state to control modal visibility
   const [claimedOrderIds, setClaimedOrderIds] = useState([]);
   const [deliveredOrderIds, setDeliveredOrderIds] = useState([]);
-
-  //remove if crashes
   const [selectedDeliveryId, setSelectedDeliveryId] = useState(null);
-  const [driverLocation, setDriverLocation] = useState({ lat: 37.7749, lng: -122.4194 });
+  // Updated to match default values in DeliveryMap for consistency
+  const [driverLocation, setDriverLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
 
-// remove if crashes
-useEffect(() => {
-  if (navigator.geolocation) {
-    const watchId = navigator.geolocation.watchPosition(
-      (position) => {
-        setDriverLocation({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        });
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-      },
-      { enableHighAccuracy: true }
-    );
-    
-    return () => navigator.geolocation.clearWatch(watchId);
-  }
-}, []);
+  // Track driver's location with improved error handling
+  useEffect(() => {
+    if (navigator.geolocation) {
+      // Set default location while waiting for real position
+      setDriverLocation({ lat: 6.927079, lng: 79.861244 }); // Default to Sri Lanka coordinates as in DeliveryMap
+      
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          setDriverLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          setLocationError(null); // Clear any previous errors
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setLocationError(`Location error: ${error.message}`);
+          // Don't reset driver location - keep the default
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+      
+      return () => navigator.geolocation.clearWatch(watchId);
+    } else {
+      setLocationError("Geolocation is not supported by your browser");
+    }
+  }, []);
 
   // Load claimed and delivered orders from localStorage on component mount
   useEffect(() => {
@@ -53,8 +62,67 @@ useEffect(() => {
     }
   }, []);
 
+  // Function to fetch restaurant details
+  const fetchRestaurantDetails = async (restaurantId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      
+      const response = await axios.get(`http://localhost:5001/api/drivers/restaurants/${restaurantId}/address`, { headers });
+      return response.data.data;
+    } catch (err) {
+      console.error(`Failed to fetch restaurant details for ID ${restaurantId}:`, err);
+      return null;
+    }
+  };
 
-  
+  // Enhanced function to enrich orders with restaurant data and location coordinates
+  const enrichOrdersWithRestaurantData = async (ordersData) => {
+    const enrichedOrders = [];
+    
+    for (const order of ordersData) {
+      let restaurantDetails = null;
+      
+      // Only fetch restaurant details if we have a valid restaurant ID
+      if (order.items && order.items.length > 0 && order.items[0].restaurantId) {
+        restaurantDetails = await fetchRestaurantDetails(order.items[0].restaurantId);
+      }
+      
+      // Create basic order structure
+      const enrichedOrder = {
+        _id: order._id || `order-${Math.random().toString(36).substr(2, 9)}`,
+        orderNumber: order._id ? order._id.toString().slice(-6) : Math.floor(100000 + Math.random() * 900000).toString(),
+        restaurantName: restaurantDetails ? restaurantDetails.name : `Restaurant ${order.items[0]?.restaurantId?.toString().slice(-4) || "Unknown"}`,
+        restaurantAddress: restaurantDetails ? restaurantDetails.fullAddress : null,
+        dropoffAddress: order.shippingInfo
+          ? `${order.shippingInfo.address || ''}, ${order.shippingInfo.city || ''}, ${order.shippingInfo.postalCode || ''}`
+          : "123 Sample St, Springfield, 12345",
+        customerName: order.customerName || "Customer Name", 
+        customerPhone: order.customerPhone || "123-456-7890", 
+        estimatedEarnings: order.totalAmount ? (order.totalAmount * 0.15).toFixed(2) : "5.00",
+        status: 'new',
+        items: order.items || [{quantity: 1, name: "Test Item"}],
+        totalAmount: order.totalAmount || 25.00,
+        // Add empty location objects for DeliveryMap component
+        pickupLocation: { lat: null, lng: null },
+        dropoffLocation: { lat: null, lng: null }
+      };
+      
+      // Check if the order already has location data
+      if (order.pickupLocation && typeof order.pickupLocation.lat === 'number' && typeof order.pickupLocation.lng === 'number') {
+        enrichedOrder.pickupLocation = order.pickupLocation;
+      }
+      
+      if (order.dropoffLocation && typeof order.dropoffLocation.lat === 'number' && typeof order.dropoffLocation.lng === 'number') {
+        enrichedOrder.dropoffLocation = order.dropoffLocation;
+      }
+      
+      enrichedOrders.push(enrichedOrder);
+    }
+    
+    return enrichedOrders;
+  };
+
   // Fetch orders from the connected database
   useEffect(() => {
     const fetchOrders = async () => {
@@ -97,34 +165,17 @@ useEffect(() => {
           ];
         }
         
-        // Convert orders to delivery format
-        const newOrders = ordersData.map(order => {
-          return {
-            _id: order._id || `order-${Math.random().toString(36).substr(2, 9)}`,
-            orderNumber: order._id ? order._id.toString().slice(-6) : Math.floor(100000 + Math.random() * 900000).toString(),
-            restaurantName: order.items && order.items.length > 0 
-              ? `Restaurant ${order.items[0]?.restaurantId?.toString().slice(-4) || "Unknown"}`
-              : "Restaurant Unknown",
-            dropoffAddress: order.shippingInfo
-              ? `${order.shippingInfo.address || ''}, ${order.shippingInfo.city || ''}, ${order.shippingInfo.postalCode || ''}`
-              : "123 Sample St, Springfield, 12345", // Fallback for testing
-            customerName: order.customerName || "Customer Name", 
-            customerPhone: order.customerPhone || "123-456-7890", 
-            estimatedEarnings: order.totalAmount ? (order.totalAmount * 0.15).toFixed(2) : "5.00",
-            status: 'new',
-            items: order.items || [{quantity: 1, name: "Test Item"}],
-            totalAmount: order.totalAmount || 25.00
-          };
-        });
+        // Enrich orders with restaurant data
+        const enrichedOrders = await enrichOrdersWithRestaurantData(ordersData);
         
         // Filter out orders that have been claimed or delivered by this driver
-        const availableOrders = newOrders.filter(order => 
+        const availableOrders = enrichedOrders.filter(order => 
           order._id && 
-          !claimedOrderIds.includes(order._id) && // Filter out claimed orders
-          !deliveredOrderIds.includes(order._id)   // Filter out delivered orders
+          !claimedOrderIds.includes(order._id) && 
+          !deliveredOrderIds.includes(order._id)
         );
         
-        console.log('Available orders after filtering out claimed and delivered orders:', availableOrders);
+        console.log('Available orders after filtering and enrichment:', availableOrders);
         setOrders(availableOrders);
         
         // Get active deliveries from localStorage
@@ -135,7 +186,24 @@ useEffect(() => {
             console.log('Active deliveries from storage:', activeOrdersFromStorage);
             
             if (Array.isArray(activeOrdersFromStorage) && activeOrdersFromStorage.length > 0) {
-              setActiveDeliveries(activeOrdersFromStorage);
+              // Make sure all stored deliveries have the expected location structure
+              const validatedDeliveries = activeOrdersFromStorage.map(delivery => {
+                // Ensure pickup and dropoff locations exist
+                if (!delivery.pickupLocation) delivery.pickupLocation = { lat: null, lng: null };
+                if (!delivery.dropoffLocation) delivery.dropoffLocation = { lat: null, lng: null };
+                return delivery;
+              });
+              
+              setActiveDeliveries(validatedDeliveries);
+              
+              // If we have a selected delivery ID, find and set the selected delivery
+              if (selectedDeliveryId) {
+                const selected = validatedDeliveries.find(d => d._id === selectedDeliveryId);
+                if (selected) {
+                  setSelectedDelivery(selected);
+                  // Don't set showDetailsModal here - it should only show when the View Details button is clicked
+                }
+              }
             }
           }
         } catch (storageErr) {
@@ -159,7 +227,9 @@ useEffect(() => {
             estimatedEarnings: '5.25',
             status: 'new',
             items: [{quantity: 2, name: "Burger"}],
-            totalAmount: 35.00
+            totalAmount: 35.00,
+            pickupLocation: { lat: null, lng: null },
+            dropoffLocation: { lat: null, lng: null }
           }
         ];
         // Filter out claimed and delivered orders even with dummy data
@@ -174,15 +244,12 @@ useEffect(() => {
 
     fetchOrders();
     
-
-
-
     // Set up interval to refresh orders every 30 seconds
     const interval = setInterval(fetchOrders, 30000);
     
     // Clean up interval on component unmount
     return () => clearInterval(interval);
-  }, [claimedOrderIds, deliveredOrderIds]); // Added deliveredOrderIds as dependency
+  }, [claimedOrderIds, deliveredOrderIds, selectedDeliveryId]);
 
   useEffect(() => {
     // Save active deliveries to localStorage whenever they change
@@ -196,7 +263,7 @@ useEffect(() => {
     }
   }, [activeDeliveries]);
 
-  // New function to update earnings data
+  // Function to update earnings data
   const updateEarningsData = (delivery) => {
     try {
       // Get current earnings data
@@ -306,6 +373,8 @@ useEffect(() => {
         // Clear selected delivery if this was the one
         if (selectedDelivery && selectedDelivery._id === deliveryId) {
           setSelectedDelivery(null);
+          setSelectedDeliveryId(null); // Also clear the ID for the map component
+          setShowDetailsModal(false); // Make sure to close the modal
         }
         
         // Remove from claimedOrderIds when order is delivered
@@ -360,10 +429,13 @@ useEffect(() => {
       const updatedOrders = orders.filter(o => o._id !== order._id);
       setOrders(updatedOrders);
       
-      // Add to active deliveries
+      // Add to active deliveries with proper location structure
       const newDelivery = {
         ...order,
-        status: 'accepted'
+        status: 'accepted',
+        // Ensure location objects are properly defined
+        pickupLocation: order.pickupLocation || { lat: null, lng: null },
+        dropoffLocation: order.dropoffLocation || { lat: null, lng: null }
       };
       
       const updatedDeliveries = [...activeDeliveries, newDelivery];
@@ -381,18 +453,29 @@ useEffect(() => {
         console.error('Failed to update localStorage:', err);
       }
       
+      // Set this as the selected delivery
+      setSelectedDelivery(newDelivery);
+      setSelectedDeliveryId(newDelivery._id);
+      // Don't show modal here, just select the delivery for the map
+      
       toast(`Order #${order.orderNumber} accepted successfully!`);
     } catch (err) {
       setError(`Failed to accept order: ${err.message}`);
     }
   };
 
-  // const handleViewDetails = (delivery) => {
-  //   setSelectedDelivery(delivery);
-  // };
+  // Updated to also open the modal
   const handleViewDetails = (delivery) => {
     setSelectedDelivery(delivery);
-    setSelectedDeliveryId(delivery._id); // Update this to also set selected delivery ID (remove if crashes) an uncomment above 3 lines
+    setSelectedDeliveryId(delivery._id);
+    setShowDetailsModal(true); // Show the modal when View Details is clicked
+  };
+
+  // Function to close the modal
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    // Don't clear the selectedDelivery or selectedDeliveryId here
+    // so the map stays focused on the selected delivery
   };
 
   const getStatusText = (status) => {
@@ -447,14 +530,20 @@ useEffect(() => {
         </div>
       )}
       
-      {/* Order Details Modal */}
-      {selectedDelivery && (
+      {locationError && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+          Warning: {locationError} - Using default location for mapping.
+        </div>
+      )}
+      
+      {/* Order Details Modal - Now controlled by showDetailsModal state */}
+      {selectedDelivery && showDetailsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-bold">Order #{selectedDelivery.orderNumber} Details</h3>
               <button 
-                onClick={() => setSelectedDelivery(null)}
+                onClick={closeDetailsModal}
                 className="text-gray-500 hover:text-gray-700"
               >
                 &times;
@@ -464,20 +553,14 @@ useEffect(() => {
             <div className="mb-4">
               <p className="text-sm text-gray-600">Restaurant:</p>
               <p className="font-medium">{selectedDelivery.restaurantName}</p>
-              {/* {selectedDelivery.pickupAddress && (
-                <p className="text-gray-600">{selectedDelivery.pickupAddress}</p>
-              )} */}
+              {selectedDelivery.restaurantAddress && (
+                <p className="text-gray-600">{selectedDelivery.restaurantAddress}</p>
+              )}
             </div>
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Delivery Address:</p>
               <p className="font-medium">{selectedDelivery.dropoffAddress}</p>
-            </div>
-            
-            <div className="mb-4">
-              <p className="text-sm text-gray-600">Customer:</p>
-              <p className="font-medium">{selectedDelivery.customerName}</p>
-              <p className="text-gray-600">{selectedDelivery.customerPhone}</p>
             </div>
             
             <div className="mb-4">
@@ -500,17 +583,17 @@ useEffect(() => {
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Order Total:</p>
-              <p className="font-medium">LKR {typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
+              <p className="font-medium">USD {typeof selectedDelivery.totalAmount === 'number' ? selectedDelivery.totalAmount.toFixed(2) : selectedDelivery.totalAmount}</p>
             </div>
             
             <div className="mb-4">
               <p className="text-sm text-gray-600">Your Earnings:</p>
-              <p className="font-medium text-green-600">LKR {selectedDelivery.estimatedEarnings}</p>
+              <p className="font-medium text-green-600">USD {selectedDelivery.estimatedEarnings}</p>
             </div>
             
             <div className="mt-6">
               <button 
-                onClick={() => setSelectedDelivery(null)}
+                onClick={closeDetailsModal}
                 className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"
               >
                 Close
@@ -544,12 +627,12 @@ useEffect(() => {
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Order Total:</p>
-                  <p className="font-medium">LKR {typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
+                  <p className="font-medium">USD {typeof order.totalAmount === 'number' ? order.totalAmount.toFixed(2) : order.totalAmount}</p>
                 </div>
                 
                 <div className="mt-4">
                   <p className="text-sm text-gray-600">Estimated Earnings:</p>
-                  <p className="font-medium text-green-600">LKR {order.estimatedEarnings}</p>
+                  <p className="font-medium text-green-600">USD {order.estimatedEarnings}</p>
                 </div>
                 
                 <div className="mt-6">
@@ -570,11 +653,11 @@ useEffect(() => {
         </div>
       )}
       
-     
-      {/* {activeDeliveries.length > 0 && (
+      {/* Delivery Map Section */}
+      {activeDeliveries && activeDeliveries.length > 0 && (
         <div className="mb-8">
           <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
-          <div className="bg-white rounded-lg shadow h-96">
+          <div className="bg-white rounded-lg shadow" style={{ height: "500px" }}>
             <DeliveryMap 
               activeDeliveries={activeDeliveries}
               selectedDeliveryId={selectedDeliveryId}
@@ -583,20 +666,7 @@ useEffect(() => {
             />
           </div>
         </div>
-      )} */}
-      {activeDeliveries && activeDeliveries.length > 0 && (
-  <div className="mb-8">
-    <h3 className="text-xl font-bold mb-4">Delivery Map</h3>
-    <div className="bg-white rounded-lg shadow h-96">
-      <DeliveryMap 
-        activeDeliveries={activeDeliveries}
-        selectedDeliveryId={selectedDeliveryId}
-        setSelectedDeliveryId={setSelectedDeliveryId}
-        driverLocation={driverLocation}
-      />
-    </div>
-  </div>
-)}
+      )}
       
       {/* Active Deliveries Section */}
       <h3 className="text-xl font-bold mb-4">Active Deliveries</h3>
@@ -618,20 +688,21 @@ useEffect(() => {
                 </div>
               </div>
               
+              {delivery.restaurantAddress && (
+                <div className="mt-4">
+                  <p className="text-sm text-gray-600">Restaurant Address:</p>
+                  <p className="font-medium">{delivery.restaurantAddress}</p>
+                </div>
+              )}
+              
               <div className="mt-4">
                 <p className="text-sm text-gray-600">Dropoff Location:</p>
                 <p className="font-medium">{delivery.dropoffAddress}</p>
               </div>
               
               <div className="mt-4">
-                <p className="text-sm text-gray-600">Customer:</p>
-                <p className="font-medium">{delivery.customerName}</p>
-                <p className="text-gray-600">{delivery.customerPhone}</p>
-              </div>
-              
-              <div className="mt-4">
                 <p className="text-sm text-gray-600">Earnings:</p>
-                <p className="font-medium text-green-600">LKR {delivery.estimatedEarnings}</p>
+                <p className="font-medium text-green-600">USD {delivery.estimatedEarnings}</p>
               </div>
               
               <div className="mt-8 border-t pt-4">
@@ -685,4 +756,3 @@ useEffect(() => {
 };
 
 export default ActiveDeliveries;
-
