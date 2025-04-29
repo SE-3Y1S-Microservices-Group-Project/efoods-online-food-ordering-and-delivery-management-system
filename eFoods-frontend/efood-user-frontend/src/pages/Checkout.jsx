@@ -73,7 +73,7 @@ const Checkout = () => {
                 <p className="text-sm opacity-80">Qty: {item.quantity}</p>
               </div>
               <p className="text-xl font-bold">
-                Rs. {(item.menuItem?.price * item.quantity).toFixed(2)}
+                US$. {(item.menuItem?.price * item.quantity).toFixed(2)}
               </p>
             </div>
           ))}
@@ -126,7 +126,7 @@ const Checkout = () => {
         {/* Total & Button */}
         <div className="mt-10 flex flex-col sm:flex-row justify-between items-center gap-6">
           <p className="text-2xl font-bold text-[#A0DAB8]">
-            Total: Rs. {total.toFixed(2)}
+            Total: US$. {total.toFixed(2)}
           </p>
           <button
             onClick={handleCheckout}

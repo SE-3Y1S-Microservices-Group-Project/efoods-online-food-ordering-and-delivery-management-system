@@ -1,23 +1,35 @@
 const mongoose = require("mongoose");
 const sendEmail = require("../utils/sendEmail");
-require('dotenv').config(); 
-
+require("dotenv").config();
 
 exports.getCheckoutInfo = async (req, res) => {
   const { userId } = req.params;
 
   const orderDB = req.app.locals.dbs.orderDB;
-  
+
   const restaurantDB = req.app.locals.dbs.restaurantDB;
 
-  const Order = require("../../../order-management-service-sasin/backend/models/Order")(orderDB);
-  const User = require("../../../order-management-service-sasin/backend/models/User")(orderDB);
-  const Restaurant = require("../../../restaurant-management-service-neranda/backend/models/Restaurant")(restaurantDB);
-  const MenuItem = require("../../../restaurant-management-service-neranda/backend/models/MenuItem")(restaurantDB);
+  const Order =
+    require("../../../order-management-service-sasin/backend/models/Order")(
+      orderDB
+    );
+  const User =
+    require("../../../order-management-service-sasin/backend/models/User")(
+      orderDB
+    );
+  const Restaurant =
+    require("../../../restaurant-management-service-neranda/backend/models/Restaurant")(
+      restaurantDB
+    );
+  const MenuItem =
+    require("../../../restaurant-management-service-neranda/backend/models/MenuItem")(
+      restaurantDB
+    );
 
   try {
     const latestOrder = await Order.findOne({ userId }).sort({ createdAt: -1 });
-    if (!latestOrder) return res.status(404).json({ message: "Order not found" });
+    if (!latestOrder)
+      return res.status(404).json({ message: "Order not found" });
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -26,11 +38,17 @@ exports.getCheckoutInfo = async (req, res) => {
 
     const itemsWithDetails = await Promise.all(
       latestOrder.items.map(async (item) => {
-        console.log(`Fetching details for Item: ${item._id}, Restaurant ID: ${item.restaurantId}, MenuItem ID: ${item.menuitemId}`);
+        console.log(
+          `Fetching details for Item: ${item._id}, Restaurant ID: ${item.restaurantId}, MenuItem ID: ${item.menuitemId}`
+        );
 
         // Convert to ObjectId correctly using new keyword
-        const restaurant = await Restaurant.findById(new mongoose.Types.ObjectId(item.restaurantId));
-        const menuItem = await MenuItem.findById(new mongoose.Types.ObjectId(item.menuitemId));
+        const restaurant = await Restaurant.findById(
+          new mongoose.Types.ObjectId(item.restaurantId)
+        );
+        const menuItem = await MenuItem.findById(
+          new mongoose.Types.ObjectId(item.menuitemId)
+        );
 
         console.log("Fetched Restaurant:", restaurant);
         console.log("Fetched MenuItem:", menuItem);
@@ -39,7 +57,7 @@ exports.getCheckoutInfo = async (req, res) => {
           ...item,
           restaurantName: restaurant ? restaurant.name : "Unknown Restaurant",
           menuItemName: menuItem ? menuItem.name : "Unknown Menu Item",
-          price: menuItem ? menuItem.price : 0 // Assuming price is part of MenuItem
+          price: menuItem ? menuItem.price : 0, // Assuming price is part of MenuItem
         };
       })
     );
@@ -48,88 +66,86 @@ exports.getCheckoutInfo = async (req, res) => {
       order: {
         items: itemsWithDetails,
         totalAmount: latestOrder.totalAmount,
-        shippingInfo: latestOrder.shippingInfo
+        shippingInfo: latestOrder.shippingInfo,
       },
       customer: {
         firstName: user.firstName,
         lastName: user.lastName,
         contact: user.contact,
-        email: user.email
+        email: user.email,
       },
-     // savedCards
+      // savedCards
     });
-
   } catch (err) {
     console.error("Checkout fetch error:", err);
     res.status(500).json({ message: "Failed to fetch checkout data" });
   }
 };
 
-
 //Stripe Redirect
-const Stripe = require('stripe');
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY); 
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 exports.createCheckoutSession = async (req, res) => {
   const { userId, orderId } = req.body;
 
   try {
     // Fetch order details from your database
-    const Order = require('../../../order-management-service-sasin/backend/models/Order')(req.app.locals.dbs.orderDB);
+    const Order =
+      require("../../../order-management-service-sasin/backend/models/Order")(
+        req.app.locals.dbs.orderDB
+      );
     const order = await Order.findById(orderId);
-    
+
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ["card"],
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: "usd",
             product_data: {
-              name: 'E-Foods Order',
+              name: "E-Foods Order",
             },
             unit_amount: Math.round(order.totalAmount * 100), // Convert to cents
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: "payment",
       success_url: `${process.env.FRONTEND_URL1}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL2}`,
       metadata: {
         userId: userId.toString(),
-        orderId: orderId.toString()
-      }
+        orderId: orderId.toString(),
+      },
     });
 
     res.json({ sessionId: session.id, url: session.url });
-
   } catch (error) {
-    console.error('Stripe session creation error:', error);
-    res.status(500).json({ error: 'Failed to create payment session' });
+    console.error("Stripe session creation error:", error);
+    res.status(500).json({ error: "Failed to create payment session" });
   }
 };
-
-
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 // Stripe Webhook Handler
 exports.handleWebhook = async (req, res) => {
-  const sigHeader = req.headers['stripe-signature'];
-const rawBody = req.body;
+  const sigHeader = req.headers["stripe-signature"];
+  const rawBody = req.body;
 
-let event;
+  let event;
 
-try {
-  event = stripe.webhooks.constructEvent(rawBody, sigHeader, endpointSecret);
-} catch (err) {
-  console.log(`Webhook signature verification failed: ${err.message}`);
-  return res.status(400).send(`Webhook error: ${err.message}`);
-}
+  try {
+    event = stripe.webhooks.constructEvent(rawBody, sigHeader, endpointSecret);
+  } catch (err) {
+    console.log(`Webhook signature verification failed: ${err.message}`);
+    return res.status(400).send(`Webhook error: ${err.message}`);
+  }
   // Step 2: Handle the event based on the type
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
@@ -142,7 +158,10 @@ try {
     try {
       // Step 3: Validate the Order ID
       const orderDB = req.app.locals.dbs.orderDB;
-      const Order = require("../../../order-management-service-sasin/backend/models/Order")(orderDB);
+      const Order =
+        require("../../../order-management-service-sasin/backend/models/Order")(
+          orderDB
+        );
 
       // Step 4: Fetch the Order from the Database
       const order = await Order.findById(orderId);
@@ -173,6 +192,28 @@ try {
         return res.status(500).json({ error: "Failed to save order" });
       }
 
+      // Save Payment Info to Payment Model
+      try {
+        const paymentDB = req.app.locals.dbs.paymentDB; // assume you're using separate DB
+        const Payment = require("../models/Payment")(paymentDB); // adjust path if needed
+
+        const paymentRecord = new Payment({
+          orderId: order._id,
+          stripeSessionId,
+          amountTotal: session.amount_total / 100, // convert from cents
+          currency: session.currency,
+          status: paymentStatus,
+          paidAt: new Date(),
+        });
+
+        await paymentRecord.save();
+        console.log("Payment record saved:", paymentRecord._id);
+      } catch (paymentSaveErr) {
+        console.error("Error saving payment record:", paymentSaveErr.message);
+      }
+
+      
+
       // Step 8: Send Confirmation Email
       try {
         await sendEmail({
@@ -184,7 +225,6 @@ try {
       } catch (emailErr) {
         console.error("Error sending email:", emailErr.message);
       }
-
     } catch (err) {
       console.error("Error processing webhook:", err.message);
       return res.status(500).json({ error: "Failed to process webhook" });
@@ -196,8 +236,6 @@ try {
   // Step 9: Respond to Stripe to acknowledge the receipt of the webhook
   res.status(200).json({ received: true });
 };
-
-
 
 //Get payment session details
 exports.getSessionDetails = async (req, res) => {
@@ -212,15 +250,15 @@ exports.getSessionDetails = async (req, res) => {
       amount: session.amount_total,
       status: session.payment_status,
       created: session.created,
-      sessionId: session.id
+      sessionId: session.id,
     });
   } catch (error) {
-    console.error('Failed to retrieve Stripe session:', error.message);
-    res.status(500).json({ error: 'Failed to retrieve Stripe session details' });
+    console.error("Failed to retrieve Stripe session:", error.message);
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve Stripe session details" });
   }
 };
-
-
 
 // //Redirect user to PayHere for payment
 // const crypto = require("crypto");
@@ -266,7 +304,7 @@ exports.getSessionDetails = async (req, res) => {
 //       city: order.shippingInfo.city,
 //       country: order.shippingInfo.country,
 //     };
-    
+
 // // Debug logging
 // console.log("Generating hash with these values:");
 // console.log({
@@ -308,8 +346,6 @@ exports.getSessionDetails = async (req, res) => {
 //     res.status(500).json({ message: "Failed to process payment" });
 //   }
 // };
-
-
 
 // //Handle PayHere Payment Notification
 // exports.notifyPayment = async (req, res) => {
@@ -376,19 +412,19 @@ exports.getSessionDetails = async (req, res) => {
 // Helper: Send confirmation email
 const sendConfirmationEmail = async (toEmail, userName, transaction) => {
   try {
-      const transporter = nodemailer.createTransport({
-          service: 'gmail', // or use Mailgun, SendGrid, etc.
-          auth: {
-              user: process.env.EMAIL_USER,
-              pass: process.env.EMAIL_PASS
-          }
-      });
+    const transporter = nodemailer.createTransport({
+      service: "gmail", // or use Mailgun, SendGrid, etc.
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
 
-      const mailOptions = {
-          from: process.env.EMAIL_USER,
-          to: toEmail,
-          subject: 'eFoods - Payment Successful',
-          html: `
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: toEmail,
+      subject: "eFoods - Payment Successful",
+      html: `
               <h3>Hello ${userName},</h3>
               <p>Thank you for your order. Your payment was successfully processed.</p>
               <p><strong>Order ID:</strong> ${transaction.orderId}</p>
@@ -396,13 +432,12 @@ const sendConfirmationEmail = async (toEmail, userName, transaction) => {
               <p>We hope you enjoy your meal!</p>
               <br>
               <p>— eFoods Team</p>
-          `
-      };
+          `,
+    };
 
-      await transporter.sendMail(mailOptions);
-      console.log(` Confirmation email sent to ${toEmail}`);
+    await transporter.sendMail(mailOptions);
+    console.log(` Confirmation email sent to ${toEmail}`);
   } catch (err) {
-      console.error(" Failed to send confirmation email:", err.message);
+    console.error(" Failed to send confirmation email:", err.message);
   }
 };
-

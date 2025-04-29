@@ -98,7 +98,7 @@ export default function Order() {
                         ))}
                       </ul>
                     </td>
-                    <td className="px-4 py-2">Rs: {order.totalAmount.toFixed(2)}</td>
+                    <td className="px-4 py-2">US$: {order.totalAmount.toFixed(2)}</td>
                     <td className="px-4 py-2">{order.paymentMethod.replace(/_/g, ' ')}</td>
                     <td className="px-4 py-2 font-semibold text-sky-700">{order.status}</td>
                     <td className="px-4 py-2 space-x-2 text-center">
