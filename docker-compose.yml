@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  payment-notification-service:
+    build:
+      context: ./payment-and-notification-management-service-ishara/backend
+      dockerfile: Dockerfile
+    container_name: payment-notification-service
+    ports:
+      - "5003:5003"
+    env_file:
+      - ./payment-and-notification-management-service-ishara/backend/.env
+    networks:
+      - efoods-network
+
+  order-management-service:
+    build:
+      context: ./order-management-service-sasin/backend
+      dockerfile: Dockerfile
+    container_name: order-management-service
+    ports:
+      - "2139:2139"
+    env_file:
+      - ./order-management-service-sasin/backend/.env
+    networks:
+      - efoods-network
+
+  restaurant-management-service:
+    build:
+      context: ./restaurant-management-service-neranda/backend
+      dockerfile: Dockerfile
+    container_name: restaurant-management-service
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./restaurant-management-service-neranda/backend/.env
+    networks:
+      - efoods-network
+
+  delivery-management-service:
+    build:
+      context: ./delivery-management-service-buwaneka/back
+      dockerfile: Dockerfile
+    container_name: delivery-management-service
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./delivery-management-service-buwaneka/back/.env
+    networks:
+      - efoods-network
+
+networks:
+  efoods-network:
+    driver: bridge

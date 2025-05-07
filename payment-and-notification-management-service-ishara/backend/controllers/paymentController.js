@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const sendEmail = require("../utils/sendEmail");
 require("dotenv").config();
 
 exports.getCheckoutInfo = async (req, res) => {
@@ -10,19 +9,19 @@ exports.getCheckoutInfo = async (req, res) => {
   const restaurantDB = req.app.locals.dbs.restaurantDB;
 
   const Order =
-    require("../../../order-management-service-sasin/backend/models/Order")(
+    require("../models/Order")(
       orderDB
     );
   const User =
-    require("../../../order-management-service-sasin/backend/models/User")(
+    require("../models/User")(
       orderDB
     );
   const Restaurant =
-    require("../../../restaurant-management-service-neranda/backend/models/Restaurant")(
+    require("../models/Restaurant")(
       restaurantDB
     );
   const MenuItem =
-    require("../../../restaurant-management-service-neranda/backend/models/MenuItem")(
+    require("../models/MenuItem")(
       restaurantDB
     );
 
@@ -92,7 +91,7 @@ exports.createCheckoutSession = async (req, res) => {
   try {
     // Fetch order details from your database
     const Order =
-      require("../../../order-management-service-sasin/backend/models/Order")(
+      require("../models/Order")(
         req.app.locals.dbs.orderDB
       );
     const order = await Order.findById(orderId);
@@ -159,7 +158,7 @@ exports.handleWebhook = async (req, res) => {
       // Step 3: Validate the Order ID
       const orderDB = req.app.locals.dbs.orderDB;
       const Order =
-        require("../../../order-management-service-sasin/backend/models/Order")(
+        require("../models/Order")(
           orderDB
         );
 
@@ -212,19 +211,6 @@ exports.handleWebhook = async (req, res) => {
         console.error("Error saving payment record:", paymentSaveErr.message);
       }
 
-      
-
-      // Step 8: Send Confirmation Email
-      try {
-        await sendEmail({
-          to: order.user.email,
-          subject: "Payment Confirmed - E-Foods",
-          text: `Thank you for your payment for Order #${order._id}!`,
-        });
-        console.log("Confirmation email sent to:", order.user.email);
-      } catch (emailErr) {
-        console.error("Error sending email:", emailErr.message);
-      }
     } catch (err) {
       console.error("Error processing webhook:", err.message);
       return res.status(500).json({ error: "Failed to process webhook" });
@@ -257,187 +243,5 @@ exports.getSessionDetails = async (req, res) => {
     res
       .status(500)
       .json({ error: "Failed to retrieve Stripe session details" });
-  }
-};
-
-// //Redirect user to PayHere for payment
-// const crypto = require("crypto");
-
-// exports.processPayment = async (req, res) => {
-//   const { userId, orderId, cardId } = req.body;
-
-//   const Order = require("../../../order-management-service-sasin/backend/models/Order")(req.app.locals.dbs.orderDB);
-//   const User = require("../../../order-management-service-sasin/backend/models/User")(req.app.locals.dbs.orderDB);
-//   const Card = require("../models/Card")(req.app.locals.dbs.paymentDB);
-
-//   try {
-//     const order = await Order.findById(orderId);
-//     const user = await User.findById(userId);
-
-//     if (!order || !user) {
-//       return res.status(404).json({ message: "Order or user not found" });
-//     }
-
-//     // Optional: Validate card if selected
-//     if (cardId) {
-//       const savedCard = await Card.findOne({ _id: cardId, userId });
-//       if (!savedCard) {
-//         return res.status(404).json({ message: "Saved card not found" });
-//       }
-//     }
-
-//     // Build payment form
-//     const form = {
-//       merchant_id: process.env.PAYHERE_MERCHANT_ID,
-//       return_url: process.env.PAYHERE_RETURN_URL,
-//       cancel_url: process.env.PAYHERE_CANCEL_URL,
-//       notify_url: process.env.PAYHERE_NOTIFY_URL,
-//       order_id: order._id.toString(),
-//       items: "E-Foods Order",
-//       amount: order.totalAmount.toFixed(2),
-//       currency: "LKR",
-//       first_name: user.firstName,
-//       last_name: user.lastName,
-//       email: user.email,
-//       phone: user.contact,
-//       address: order.shippingInfo.address,
-//       city: order.shippingInfo.city,
-//       country: order.shippingInfo.country,
-//     };
-
-// // Debug logging
-// console.log("Generating hash with these values:");
-// console.log({
-//   merchant_id: form.merchant_id,
-//   order_id: form.order_id,
-//   amount: form.amount,
-//   currency: form.currency,
-//   secret_key: process.env.PAYHERE_SECRET_KEY
-// });
-
-// const hash = generatePayHereHash(
-//   form.merchant_id,
-//   form.order_id,
-//   form.amount,
-//   form.currency,
-//   process.env.PAYHERE_SECRET_KEY
-// );
-
-// console.log("Generated hash:", hash);
-// form.hash = hash;
-
-//     // Auto-submit HTML form
-//     const formHtml = `
-//       <html>
-//         <body>
-//           <form id="payhere-form" method="post" action="https://sandbox.payhere.lk/pay/checkout">
-//             ${Object.entries(form)
-//               .map(([key, value]) => `<input type="hidden" name="${key}" value="${value}">`)
-//               .join("")}
-//           </form>
-//           <script>document.getElementById('payhere-form').submit();</script>
-//         </body>
-//       </html>
-//     `;
-
-//     res.send(formHtml);
-//   } catch (error) {
-//     console.error("Error during payment redirect:", error);
-//     res.status(500).json({ message: "Failed to process payment" });
-//   }
-// };
-
-// //Handle PayHere Payment Notification
-// exports.notifyPayment = async (req, res) => {
-//   try {
-//       const { paymentDB, orderDB } = req.app.locals.dbs;
-//       const Transaction = require('../models/Payment')(paymentDB); // Your Payment model
-//       const Order = require('../../../order-management-service-sasin/backend/models/Order')(orderDB); // Order from order service
-//       const User = require('../../../order-management-service-sasin/backend/models/User')(orderDB); // User from order service
-//       const FailedLog = require('../models/FailedTransactionLog')(paymentDB);
-
-//       // Destructure required fields from PayHere POST notification
-//       const { order_id, status_code, payment_id } = req.body;
-
-//       // Find the transaction by the order_id provided by PayHere
-//       const transaction = await Transaction.findOne({ orderId: order_id });
-
-//       if (!transaction) {
-//           return res.status(404).json({ message: 'Transaction not found' });
-//       }
-
-//       // Update transaction status based on status_code from PayHere
-//       transaction.status = status_code === "2" ? "Completed" : "Failed";
-
-//       // Save the PayHere-generated payment ID for future traceability
-//       transaction.paymentId = payment_id;
-
-//       // Save the updated transaction in the database
-//       await transaction.save();
-
-//       // Optional: Update the related order as paid if status is successful
-//       if (status_code === "2") {
-//           const order = await Order.findById(transaction.orderId);
-//           if (order) {
-//               order.isPaid = true;
-//               order.paidAt = new Date();
-//               await order.save();
-//           }
-
-//           // Send confirmation email
-//           const user = await User.findById(transaction.userId);
-//           if (user) {
-//               await sendConfirmationEmail(user.email, user.firstName, transaction);
-//           }
-//       } else {
-//           // Log failed transaction for auditing
-//           await FailedLog.create({
-//               orderId: transaction.orderId,
-//               userId: transaction.userId,
-//               paymentId: payment_id,
-//               statusCode: status_code,
-//               reason: "Payment failed or rejected",
-//               receivedAt: new Date()
-//           });
-//       }
-
-//       // Send success response to PayHere
-//       res.status(200).json({ message: 'Payment notification processed successfully' });
-//   } catch (error) {
-//       console.error("Error in notifyPayment:", error.message);
-//       res.status(500).json({ message: "Server error while processing payment notification" });
-//   }
-// };
-
-// Helper: Send confirmation email
-const sendConfirmationEmail = async (toEmail, userName, transaction) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // or use Mailgun, SendGrid, etc.
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: toEmail,
-      subject: "eFoods - Payment Successful",
-      html: `
-              <h3>Hello ${userName},</h3>
-              <p>Thank you for your order. Your payment was successfully processed.</p>
-              <p><strong>Order ID:</strong> ${transaction.orderId}</p>
-              <p><strong>Payment ID:</strong> ${transaction.paymentId}</p>
-              <p>We hope you enjoy your meal!</p>
-              <br>
-              <p>— eFoods Team</p>
-          `,
-    };
-
-    await transporter.sendMail(mailOptions);
-    console.log(` Confirmation email sent to ${toEmail}`);
-  } catch (err) {
-    console.error(" Failed to send confirmation email:", err.message);
   }
 };

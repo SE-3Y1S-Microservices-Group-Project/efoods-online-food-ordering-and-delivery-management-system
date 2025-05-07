@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/connectDB');
 const paymentRoutes = require("./routes/payment");
 const paymentController = require("./controllers/paymentController");
+const notificationRoutes = require('./routes/notificationRoutes');
 
 dotenv.config();
 
@@ -29,6 +30,8 @@ connectDB().then((connections) => {
 
   // Routes
   app.use("/api/payment", paymentRoutes);
+  app.use('/api/notify', notificationRoutes);
+
 
   const PORT = process.env.PORT || 5003;
   app.listen(PORT, () => {
