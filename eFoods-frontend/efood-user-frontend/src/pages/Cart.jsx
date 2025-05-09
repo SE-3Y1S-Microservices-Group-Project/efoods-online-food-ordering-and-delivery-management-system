@@ -7,6 +7,9 @@ const Cart = () => {
   const {
     cart,
     fetchCart,
+    removeFromCart,
+    updateItemQty,
+    userId,
   } = useCart();
 
   const [loading, setLoading] = useState(false);
@@ -18,6 +21,29 @@ const Cart = () => {
 
   const calculateTotal = () => {
     return cart.reduce((total, item) => total + (item.menuItem?.price * item.quantity), 0);
+  };
+
+  const handleRemoveItem = async (menuItemId, restaurantId) => {
+    try {
+      setLoading(true);
+      await removeFromCart(restaurantId, menuItemId);
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateQuantity = async (menuItemId, restaurantId, newQuantity) => {
+    if (newQuantity < 1) return; // Prevent quantity from going below 1
+    try {
+      setLoading(true);
+      await updateItemQty(restaurantId, menuItemId, newQuantity);
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,12 +89,29 @@ const Cart = () => {
 
                   <div className="flex items-center gap-4 w-full md:w-1/2 justify-end">
                     <div className="flex items-center bg-white rounded-lg border border-[#1F7D53]/20">
-                      
+                      <button
+                        onClick={() => handleUpdateQuantity(item.menuItem._id, item.restaurantId, item.quantity - 1)}
+                        className="px-4 py-2 font-medium text-[#27391C] hover:bg-[#F0F5F1] transition-colors"
+                      >
+                        -
+                      </button>
                       <span className="px-4 py-2 font-medium text-[#27391C] min-w-[40px] text-center">
                         {item.quantity}
                       </span>
-                      
+                      <button
+                        onClick={() => handleUpdateQuantity(item.menuItem._id, item.restaurantId, item.quantity + 1)}
+                        className="px-4 py-2 font-medium text-[#27391C] hover:bg-[#F0F5F1] transition-colors"
+                      >
+                        +
+                      </button>
                     </div>
+
+                    <button
+                      onClick={() => handleRemoveItem(item.menuItem._id, item.restaurantId)}
+                      className="text-red-600 hover:text-red-800 font-semibold px-4 py-2"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </motion.div>
               ))}

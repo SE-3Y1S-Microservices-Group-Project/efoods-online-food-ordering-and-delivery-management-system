@@ -21,6 +21,6 @@ router.put('/:userId', updateItemQuantity);
 
 // @route   DELETE /api/cart/:userId/:restaurantId/:menuItemId
 // @desc    Remove an item from cart
-router.delete('/:userId/:restaurantId/:menuItemId', removeItemFromCart);
+router.delete('/:userId/:menuItemId', removeItemFromCart);
 
 module.exports = router;
