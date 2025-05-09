@@ -12,6 +12,7 @@ import Home from './pages/Home';
 import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 import Footer from './components/Footer';
+import OrderHistory from './pages/orderHistory'
 
 
 // 👇 Stripe
@@ -93,6 +94,16 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <UserNavBar />
               <UserProfile />
+            <Footer />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'history',
+        element: (
+          <ProtectedRoute>
+            <UserNavBar />
+              <OrderHistory />
             <Footer />
           </ProtectedRoute>
         ),

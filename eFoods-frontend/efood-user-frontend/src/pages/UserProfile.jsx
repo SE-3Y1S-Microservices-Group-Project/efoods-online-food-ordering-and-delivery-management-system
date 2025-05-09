@@ -43,16 +43,10 @@ const UserProfile = () => {
             Edit Profile
           </button>
           <button
-            onClick={() => navigate('/order-history')}
+            onClick={() => navigate('/history')}
             className="px-6 py-2 rounded-full bg-[#255F38] hover:bg-[#1F7D53] text-white font-semibold transition transform hover:scale-105"
           >
             Order History
-          </button>
-          <button
-            onClick={() => navigate('/favorites')}
-            className="px-6 py-2 rounded-full bg-[#255F38] hover:bg-[#1F7D53] text-white font-semibold transition transform hover:scale-105"
-          >
-            Favorites
           </button>
           <button
             onClick={handleLogout}
